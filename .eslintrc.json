@@ -20,10 +20,13 @@
   "rules": {
     "no-console": "off",
     "@typescript-eslint/explicit-function-return-type": "off",
-    "@typescript-eslint/explicit-module-boundary-types": "off"
+    "@typescript-eslint/explicit-module-boundary-types": "off",
+    "@typescript-eslint/no-non-null-assertion": "off",
+    "@typescript-eslint/ban-ts-comment": "off"
   },
   "ignorePatterns": [
-    "webpack.config.js"
+    "webpack.config.js",
+    "formTrigger.js"
   ],
   "plugins": [
     "only-warn"

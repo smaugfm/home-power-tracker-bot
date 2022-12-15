@@ -1,13 +1,25 @@
 {
   "compilerOptions": {
     "lib": [
-      "es2018"
+      "es2020"
     ],
     "outDir": "dist",
-    "target": "es2018",
-    "module": "commonjs",
+    "module": "esnext",
+    "target": "esnext",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
     "moduleResolution": "node",
-    "resolveJsonModule": true,
+    "allowUnusedLabels": false,
+    "allowUnreachableCode": false,
+    "exactOptionalPropertyTypes": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "noUncheckedIndexedAccess": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
     "noImplicitAny": true,
@@ -15,10 +27,6 @@
     "preserveConstEnums": true,
     "sourceMap": true,
     "downlevelIteration": true,
-    "allowJs": true,
-    "skipLibCheck": false,
-    "esModuleInterop": true,
-    "strict": true,
     "types": [
       "node",
       "@types/jest"
@@ -29,11 +37,12 @@
     ]
   },
   "ts-node": {
-    "files": true
+    "esm": true,
+    "experimentalSpecifierResolution": "node"
   },
   "include": [
     "src/**/*",
     "test/**/*",
-    "index.ts"
+    "src/index.ts"
   ]
 }

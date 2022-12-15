@@ -1,18 +1,21 @@
-const path = require("path");
-const {CleanWebpackPlugin} = require("clean-webpack-plugin");
+import path from "path";
+import { fileURLToPath } from "url";
+import { CleanWebpackPlugin } from "clean-webpack-plugin";
 
 const isProduction = process.env.NODE_ENV === "production";
 
 const config = {
-  entry: "./index.ts",
+  entry: "./src/index.ts",
   output: {
-    path: path.resolve(__dirname, "dist"),
+    path: path.resolve(path.dirname(fileURLToPath(import.meta.url)), "dist"),
+    filename: "index.cjs",
   },
   target: "node",
   devtool: "source-map",
-  plugins: [
-    new CleanWebpackPlugin(),
-  ],
+  plugins: [new CleanWebpackPlugin()],
+  experiments: {
+    topLevelAwait: true
+  },
   module: {
     rules: [
       {
@@ -23,7 +26,7 @@ const config = {
             noEmit: false,
           },
         },
-        exclude: ["/node_modules/"],
+        exclude: ["/node_modules/", "/src/test/"],
       },
       {
         test: /\.(eot|svg|ttf|woff|woff2|png|jpg|gif)$/i,
@@ -36,7 +39,7 @@ const config = {
   },
 };
 
-module.exports = () => {
+export default () => {
   if (isProduction) {
     config.mode = "production";
   } else {
