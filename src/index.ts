@@ -24,22 +24,22 @@ const monitoring = new MonitoringService(
       await Promise.all(
         storage
           .getTelegramChatIds(host.host)
-          .telegramChatIds.map(chatId => notifyPower(bot.telegram, power, chatId)),
+          .telegramChatIds.map(chatId => notifyPower(bot.telegram, power, chatId))
       );
     }
     if (current.isp !== isp) {
       await Promise.all(
         storage
           .getTelegramChatIds(host.host)
-          .telegramChatIds.map(chatId => notifyIsp(bot.telegram, power, chatId)),
+          .telegramChatIds.map(chatId => notifyIsp(bot.telegram, power, chatId))
       );
     }
 
     await storage.setPowerIspState(host.host, power, isp);
-  },
+  }
 );
 
 monitoring.start();
-log.info("Started monitoring");
+log.info("Started monitoring. Version " + __VERSION__);
 await bot.launch();
 

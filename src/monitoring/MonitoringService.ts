@@ -1,5 +1,4 @@
-import { pingHost } from "../ping/ping";
-import { tcpPingHost } from "../ping/ping";
+import { pingHost, tcpPingHost } from "../ping/ping";
 import { MonitorableHost } from "../types";
 import { clearInterval } from "timers";
 import { log } from "../log/log";
@@ -10,7 +9,7 @@ export class MonitoringService {
   private notification: (
     host: MonitorableHost,
     hasPower: boolean,
-    hasIsp?: boolean,
+    hasIsp?: boolean
   ) => Promise<void>;
   private timer: NodeJS.Timer | undefined;
 
@@ -19,7 +18,7 @@ export class MonitoringService {
     options: {
       interval: number;
     },
-    notification: (host: MonitorableHost, hasPower: boolean, hasIsp?: boolean) => Promise<void>,
+    notification: (host: MonitorableHost, hasPower: boolean, hasIsp?: boolean) => Promise<void>
   ) {
     this.notification = notification;
     this.intervalMs = options.interval * 1000;
@@ -32,11 +31,11 @@ export class MonitoringService {
         this.hosts.map(async host => {
           try {
             if (host.port) {
-              const [power, isp] = await Promise.all([
+              const [isp, power] = await Promise.all([
                 pingHost(host.host),
-                tcpPingHost(host.host, host.port),
+                tcpPingHost(host.host, host.port)
               ]);
-              await this.notification(host, power != undefined, isp);
+              await this.notification(host, power, isp != undefined);
             } else {
               const power = await pingHost(host.host);
               await this.notification(host, power != undefined);
@@ -44,7 +43,7 @@ export class MonitoringService {
           } catch (e) {
             log.error(`Error processing host ${host}`, e);
           }
-        }),
+        })
       );
     }, this.intervalMs);
   }
