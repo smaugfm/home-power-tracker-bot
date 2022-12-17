@@ -18,3 +18,11 @@ export type Event = {
   state: boolean;
   time: string;
 };
+
+export interface ConfigurationData {
+  host: MonitorableHost;
+  state: PowerIspState;
+  notificationSettings: NotificationSettings;
+  telegramChatIds: number[];
+  events: Event[];
+}

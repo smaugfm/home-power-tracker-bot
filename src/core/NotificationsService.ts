@@ -1,28 +1,24 @@
 import { Telegram } from "telegraf";
 import { log } from "../log/log";
 import { Event } from "../types";
-import { ConfigurationService } from "../config/ConfigurationService";
+import { Config } from "../config/Config";
 
 export class NotificationsService {
-  private readonly config: ConfigurationService;
   private readonly bot: Telegram;
 
-  constructor(config: ConfigurationService, bot: Telegram) {
-    this.config = config;
+  constructor(bot: Telegram) {
     this.bot = bot;
   }
 
-  async notify(host: string, event: Event) {
-    if (!this.config.getNotificationSettings(host)[event.type]) return Promise.resolve();
+  async notify(configuration: Config, event: Event) {
+    if (!configuration.notificationSettings[event.type]) return Promise.resolve();
 
     return Promise.all(
-      this.config
-        .getTelegramChatIds(host)
-        .map(chatId =>
-          event.type === "power"
-            ? this.notifyPower(event.state, chatId)
-            : this.notifyIsp(event.state, chatId),
-        ),
+      configuration.telegramChatIds.map(chatId =>
+        event.type === "power"
+          ? this.notifyPower(event.state, chatId)
+          : this.notifyIsp(event.state, chatId),
+      ),
     );
   }
 

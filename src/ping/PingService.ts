@@ -1,49 +1,49 @@
 import { pingHost } from "./ping";
 import { tcpPingHost } from "./ping";
-import { MonitorableHost, PowerIspState } from "../types";
+import { PowerIspState } from "../types";
 import { clearInterval } from "timers";
 import { log } from "../log/log";
 import EventEmitter from "events";
 import TypedEmitter from "typed-emitter";
-import { ConfigurationService } from "../config/ConfigurationService";
+import { Config } from "../config/Config";
 
 export type PingServiceEvents = {
-  ping: (host: MonitorableHost, state: PowerIspState) => Promise<void>;
+  ping: (configuration: Config, state: PowerIspState) => Promise<void>;
 };
 
 export class PingService extends (EventEmitter as new () => TypedEmitter<PingServiceEvents>) {
   private readonly intervalMs: number;
-  private readonly hosts: MonitorableHost[];
+  private readonly configs: Config[];
   private timer: NodeJS.Timer | undefined;
 
-  constructor(config: ConfigurationService, interval: number) {
+  constructor(configs: Config[], interval: number) {
     super();
     this.intervalMs = interval * 1000;
-    this.hosts = config.hosts;
+    this.configs = configs;
   }
 
   private ping() {
     return Promise.all(
-      this.hosts.map(async host => {
+      this.configs.map(async config => {
         try {
-          if (host.port) {
+          if (config.host.port) {
             const [isp, power] = await Promise.all([
-              pingHost(host.host),
-              tcpPingHost(host.host, host.port),
+              pingHost(config.host.host),
+              tcpPingHost(config.host.host, config.host.port),
             ]);
-            this.emit("ping", host, {
+            this.emit("ping", config, {
               power,
               isp: isp !== undefined,
             });
           } else {
-            const power = await pingHost(host.host);
-            this.emit("ping", host, {
+            const power = await pingHost(config.host.host);
+            this.emit("ping", config, {
               power: power != undefined,
               isp: undefined,
             });
           }
         } catch (e) {
-          log.error(`Error processing host ${host}`, e);
+          log.error(`Error processing host ${config.host}`, e);
         }
       }),
     );

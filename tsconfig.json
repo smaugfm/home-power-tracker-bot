@@ -26,23 +26,13 @@
     "removeComments": true,
     "preserveConstEnums": true,
     "sourceMap": true,
-    "downlevelIteration": true,
-    "types": [
-      "node",
-      "@types/jest"
-    ],
-    "typeRoots": [
-      "./node_modules/@types",
-      "./src/@types"
-    ]
+    "downlevelIteration": true
   },
   "ts-node": {
     "esm": true,
     "experimentalSpecifierResolution": "node"
   },
   "include": [
-    "src/**/*",
-    "test/**/*",
-    "src/index.ts"
+    "./src/**/*"
   ]
 }

@@ -1,28 +1,25 @@
-import { Event, MonitorableHost, PowerIspState } from "../types";
+import { Event, PowerIspState } from "../types";
 import _ from "lodash";
 import { NotificationsService } from "./NotificationsService";
-import { ConfigurationService } from "../config/ConfigurationService";
+import { Config } from "../config/Config";
 
 export class EventsService {
-  private readonly config: ConfigurationService;
   private notifications: NotificationsService;
 
-  constructor(config: ConfigurationService, notifications: NotificationsService) {
-    this.config = config;
+  constructor(notifications: NotificationsService) {
     this.notifications = notifications;
   }
 
-  public async onState(host: MonitorableHost, state: PowerIspState) {
-    const current = this.config.getCurrentState(host.host);
+  public async onState(configuration: Config, state: PowerIspState) {
+    const current = configuration.state;
     if (!_.isEqual(current, state)) {
       const events = this.computeEvents(current, state);
 
       if (events.length > 0) {
-        await Promise.all([
-          ...events.map(e => this.notifications.notify(host.host, e)),
-          this.config.setCurrentState(host.host, state),
-          this.config.addEvents(host.host, events),
-        ]);
+        await Promise.all([events.map(e => this.notifications.notify(configuration, e))]);
+
+        configuration.state = state;
+        configuration.addEvents(events);
       }
     }
   }

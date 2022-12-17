@@ -2,9 +2,9 @@ import dotenv from "dotenv";
 import { log } from "./log/log";
 import { Telegraf } from "telegraf";
 import { PingService } from "./ping/PingService";
-import { ConfigurationService } from "./config/ConfigurationService";
 import { NotificationsService } from "./core/NotificationsService";
 import { EventsService } from "./core/EventsService";
+import { Storage } from "./config/Storage";
 
 dotenv.config();
 
@@ -14,14 +14,15 @@ bot.use(ctx => {
   log.info("Received message: ", ctx.message);
 });
 
-const config = new ConfigurationService();
-const ping = new PingService(config, 10);
-const notifications = new NotificationsService(config, bot.telegram);
-const events = new EventsService(config, notifications);
+const storage = new Storage();
+
+const ping = new PingService(storage.getConfigs(), 10);
+const notifications = new NotificationsService(bot.telegram);
+const events = new EventsService(notifications);
 
 ping.on("ping", (host, state) => events.onState(host, state));
 
 await ping.start();
 
-log.info("Started monitoring. Version " + __VERSION__);
+log.info("Started...");
 await bot.launch();
