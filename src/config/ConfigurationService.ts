@@ -11,7 +11,7 @@ interface DbSchema {
   };
 }
 
-export class Storage {
+export class ConfigurationService {
   private readonly db: DbSchema;
   private readonly filename: string;
 
@@ -28,6 +28,21 @@ export class Storage {
 
   get hosts(): MonitorableHost[] {
     return Object.values(this.db).map(x => x.host);
+  }
+
+  getNotificationSettings(host: string): NotificationSettings {
+    const monitorable = this.monitorable(host);
+    if (!monitorable.notificationSettings)
+      monitorable.notificationSettings = { power: true, isp: true };
+
+    return monitorable.notificationSettings;
+  }
+
+  async setNotificationSettings(host: string, settings: NotificationSettings): Promise<void> {
+    const monitorable = this.monitorable(host);
+    monitorable.notificationSettings = settings;
+
+    await this.write();
   }
 
   getCurrentState(host: string): PowerIspState {

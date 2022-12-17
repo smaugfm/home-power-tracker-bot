@@ -1,11 +1,10 @@
 import dotenv from "dotenv";
-import { Storage } from "./storage/Storage";
 import { log } from "./log/log";
 import { Telegraf } from "telegraf";
-import { PingService } from "./service/PingService";
-import { EventsService } from "./service/EventsService";
-import { NotificationsService } from "./service/NotificationsService";
-import { stat } from "fs";
+import { PingService } from "./ping/PingService";
+import { ConfigurationService } from "./config/ConfigurationService";
+import { NotificationsService } from "./core/NotificationsService";
+import { EventsService } from "./core/EventsService";
 
 dotenv.config();
 
@@ -15,10 +14,10 @@ bot.use(ctx => {
   log.info("Received message: ", ctx.message);
 });
 
-const storage = new Storage();
-const ping = new PingService(storage, 10);
-const notifications = new NotificationsService(storage, bot.telegram);
-const events = new EventsService(storage, notifications);
+const config = new ConfigurationService();
+const ping = new PingService(config, 10);
+const notifications = new NotificationsService(config, bot.telegram);
+const events = new EventsService(config, notifications);
 
 ping.on("ping", (host, state) => events.onState(host, state));
 

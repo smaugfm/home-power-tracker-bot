@@ -1,11 +1,11 @@
-import { pingHost } from "../ping/ping";
-import { tcpPingHost } from "../ping/ping";
+import { pingHost } from "./ping";
+import { tcpPingHost } from "./ping";
 import { MonitorableHost, PowerIspState } from "../types";
 import { clearInterval } from "timers";
 import { log } from "../log/log";
-import { Storage } from "../storage/Storage";
 import EventEmitter from "events";
 import TypedEmitter from "typed-emitter";
+import { ConfigurationService } from "../config/ConfigurationService";
 
 export type PingServiceEvents = {
   ping: (host: MonitorableHost, state: PowerIspState) => Promise<void>;
@@ -16,10 +16,10 @@ export class PingService extends (EventEmitter as new () => TypedEmitter<PingSer
   private readonly hosts: MonitorableHost[];
   private timer: NodeJS.Timer | undefined;
 
-  constructor(storage: Storage, interval: number) {
+  constructor(config: ConfigurationService, interval: number) {
     super();
     this.intervalMs = interval * 1000;
-    this.hosts = storage.hosts;
+    this.hosts = config.hosts;
   }
 
   private ping() {

@@ -1,27 +1,27 @@
 import { Event, MonitorableHost, PowerIspState } from "../types";
-import { Storage } from "../storage/Storage";
 import _ from "lodash";
 import { NotificationsService } from "./NotificationsService";
+import { ConfigurationService } from "../config/ConfigurationService";
 
 export class EventsService {
-  private readonly storage: Storage;
+  private readonly config: ConfigurationService;
   private notifications: NotificationsService;
 
-  constructor(storage: Storage, notifications: NotificationsService) {
-    this.storage = storage;
+  constructor(config: ConfigurationService, notifications: NotificationsService) {
+    this.config = config;
     this.notifications = notifications;
   }
 
   public async onState(host: MonitorableHost, state: PowerIspState) {
-    const current = this.storage.getCurrentState(host.host);
+    const current = this.config.getCurrentState(host.host);
     if (!_.isEqual(current, state)) {
       const events = this.computeEvents(current, state);
 
       if (events.length > 0) {
         await Promise.all([
           ...events.map(e => this.notifications.notify(host.host, e)),
-          this.storage.setCurrentState(host.host, state),
-          this.storage.addEvents(host.host, events),
+          this.config.setCurrentState(host.host, state),
+          this.config.addEvents(host.host, events),
         ]);
       }
     }

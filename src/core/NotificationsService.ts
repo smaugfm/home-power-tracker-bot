@@ -1,21 +1,22 @@
-import { Storage } from "../storage/Storage";
 import { Telegram } from "telegraf";
 import { log } from "../log/log";
-import _ from "lodash";
 import { Event } from "../types";
+import { ConfigurationService } from "../config/ConfigurationService";
 
 export class NotificationsService {
-  private readonly storage: Storage;
+  private readonly config: ConfigurationService;
   private readonly bot: Telegram;
 
-  constructor(storage: Storage, bot: Telegram) {
-    this.storage = storage;
+  constructor(config: ConfigurationService, bot: Telegram) {
+    this.config = config;
     this.bot = bot;
   }
 
   async notify(host: string, event: Event) {
+    if (!this.config.getNotificationSettings(host)[event.type]) return Promise.resolve();
+
     return Promise.all(
-      this.storage
+      this.config
         .getTelegramChatIds(host)
         .map(chatId =>
           event.type === "power"
