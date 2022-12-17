@@ -26,7 +26,8 @@
     "removeComments": true,
     "preserveConstEnums": true,
     "sourceMap": true,
-    "downlevelIteration": true
+    "downlevelIteration": true,
+    "allowJs": true
   },
   "ts-node": {
     "esm": true,

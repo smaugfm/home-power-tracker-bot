@@ -1,6 +1,6 @@
 import { Event, PowerIspState } from "../types";
 import _ from "lodash";
-import { NotificationsService } from "./NotificationsService";
+import { NotificationsService } from "../notifications/NotificationsService";
 import { Config } from "../config/Config";
 
 export class EventsService {
@@ -26,11 +26,12 @@ export class EventsService {
 
   private computeEvents(current: PowerIspState, state: PowerIspState): Event[] {
     const events: Event[] = [];
+    const time = Temporal.Now.zonedDateTimeISO().toString()
     if (current.power !== state.power) {
       const event: Event = {
         type: "power",
         state: state.power,
-        time: new Date().toISOString(),
+        time,
       };
       events.push(event);
     }
@@ -38,7 +39,7 @@ export class EventsService {
       const event: Event = {
         type: "isp",
         state: state.isp,
-        time: new Date().toISOString(),
+        time,
       };
       events.push(event);
     }

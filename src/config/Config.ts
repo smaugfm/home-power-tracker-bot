@@ -52,4 +52,9 @@ export class Config {
     this.data.events.push(...events);
     this.storage.persist();
   }
+
+  get events(): Event[] {
+    if (!this.data.events) this.data.events = [];
+    return this.data.events;
+  }
 }

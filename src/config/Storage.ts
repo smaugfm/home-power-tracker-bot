@@ -16,7 +16,8 @@ export class Storage {
   }
 
   public persist() {
-    return fsSync.writeFileSync(this.filename, JSON.stringify(this.db, undefined, 2));
+    const str = JSON.stringify(this.db, undefined, 2);
+    return fsSync.writeFileSync(this.filename, str);
   }
 
   private populate(filename: string): ConfigurationData[] {
@@ -25,6 +26,6 @@ export class Storage {
       read = JSON.parse(fsSync.readFileSync(filename, "utf-8"));
     }
 
-    return Object.assign({}, read);
+    return read;
   }
 }

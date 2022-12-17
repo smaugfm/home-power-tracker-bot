@@ -1,10 +1,11 @@
+import "temporal-polyfill/global";
 import dotenv from "dotenv";
 import { log } from "./log/log";
 import { Telegraf } from "telegraf";
 import { PingService } from "./ping/PingService";
-import { NotificationsService } from "./core/NotificationsService";
-import { EventsService } from "./core/EventsService";
+import { NotificationsService } from "./notifications/NotificationsService";
 import { Storage } from "./config/Storage";
+import { EventsService } from "./events/EventsService";
 
 dotenv.config();
 
@@ -25,4 +26,5 @@ ping.on("ping", (host, state) => events.onState(host, state));
 await ping.start();
 
 log.info("Started...");
+
 await bot.launch();

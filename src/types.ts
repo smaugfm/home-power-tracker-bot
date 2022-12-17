@@ -26,3 +26,30 @@ export interface ConfigurationData {
   telegramChatIds: number[];
   events: Event[];
 }
+
+export type Stats = IspUpStats | IspDownStats | PowerUpStats | PowerDownStats | EmptyStats;
+
+export interface LastInverse {
+  lastInverse: Temporal.Duration;
+}
+
+export type EmptyStats = {
+  type: "empty";
+};
+
+export type PowerUpStats = LastInverse & {
+  type: "powerUp";
+};
+
+export type PowerDownStats = LastInverse & {
+  type: "powerDown";
+};
+
+export type IspUpStats = LastInverse & {
+  type: "ispUp";
+};
+
+export type IspDownStats = LastInverse & {
+  type: "ispDown";
+  lastPowerUp?: Temporal.Duration;
+};
