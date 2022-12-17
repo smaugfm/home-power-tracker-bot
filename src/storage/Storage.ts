@@ -1,8 +1,15 @@
 import fsSync, { promises as fs } from "fs";
-import { MonitorableHost, PowerIspState, TelegramChatIds } from "../types";
-import _ from "lodash";
+import { Event, MonitorableHost, NotificationSettings, PowerIspState } from "../types";
 
-type DbSchema = Record<string, MonitorableHost & PowerIspState & TelegramChatIds>;
+interface DbSchema {
+  [k: string]: {
+    host: MonitorableHost;
+    state: PowerIspState;
+    notificationSettings: NotificationSettings;
+    telegramChatIds: number[];
+    events: Event[];
+  };
+}
 
 export class Storage {
   private readonly db: DbSchema;
@@ -11,6 +18,45 @@ export class Storage {
   constructor(filename = "db.json") {
     this.db = this.read(filename);
     this.filename = filename;
+  }
+
+  getTelegramChatIds(host: string): number[] {
+    const monitorable = this.monitorable(host);
+
+    return monitorable.telegramChatIds;
+  }
+
+  get hosts(): MonitorableHost[] {
+    return Object.values(this.db).map(x => x.host);
+  }
+
+  getCurrentState(host: string): PowerIspState {
+    const monitorable = this.monitorable(host);
+
+    return monitorable.state;
+  }
+
+  async setCurrentState(host: string, state: PowerIspState): Promise<void> {
+    const monitorable = this.monitorable(host);
+
+    monitorable.state = state;
+    await this.write();
+  }
+
+  async addEvents(host: string, events: Event[]): Promise<void> {
+    const value = this.monitorable(host);
+
+    if (!value.events) value.events = [];
+
+    value.events.push(...events);
+    await this.write();
+  }
+
+  private monitorable(host: string) {
+    const value = this.db[host];
+    if (!value) throw new Error("Missing host: " + host);
+
+    return value;
   }
 
   private read(filename: string): DbSchema {
@@ -24,35 +70,5 @@ export class Storage {
 
   private write() {
     return fs.writeFile(this.filename, JSON.stringify(this.db, undefined, 2));
-  }
-
-  getTelegramChatIds(host: string): TelegramChatIds {
-    const value = this.db[host];
-    if (!value) throw new Error("Missing host: " + host);
-
-    return _.pick(value, "telegramChatIds");
-  }
-
-  get hosts(): MonitorableHost[] {
-    return Object.values(this.db);
-  }
-
-  getPowerIspState(host: string): Partial<PowerIspState> {
-    const value = this.db[host];
-    if (!value) throw new Error("Missing host: " + host);
-
-    return _.pick(value, "power", "isp");
-  }
-
-  async setPowerIspState(host: string, power: boolean, isp?: boolean): Promise<void> {
-    const value = this.db[host];
-    if (!value) throw new Error("Missing host: " + host);
-
-    this.db[host] = {
-      ...value,
-      power,
-      isp,
-    };
-    await this.write();
   }
 }

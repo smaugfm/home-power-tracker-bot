@@ -1,9 +1,11 @@
 import dotenv from "dotenv";
 import { Storage } from "./storage/Storage";
-import { MonitoringService } from "./monitoring/MonitoringService";
 import { log } from "./log/log";
-import { notifyIsp, notifyPower } from "./telegraf/notification";
 import { Telegraf } from "telegraf";
+import { PingService } from "./service/PingService";
+import { EventsService } from "./service/EventsService";
+import { NotificationsService } from "./service/NotificationsService";
+import { stat } from "fs";
 
 dotenv.config();
 
@@ -14,32 +16,13 @@ bot.use(ctx => {
 });
 
 const storage = new Storage();
-const monitoring = new MonitoringService(
-  storage.hosts,
-  { interval: 10 },
-  async (host, power, isp) => {
-    const current = storage.getPowerIspState(host.host);
+const ping = new PingService(storage, 10);
+const notifications = new NotificationsService(storage, bot.telegram);
+const events = new EventsService(storage, notifications);
 
-    if (current.power !== power) {
-      await Promise.all(
-        storage
-          .getTelegramChatIds(host.host)
-          .telegramChatIds.map(chatId => notifyPower(bot.telegram, power, chatId))
-      );
-    }
-    if (current.isp !== isp) {
-      await Promise.all(
-        storage
-          .getTelegramChatIds(host.host)
-          .telegramChatIds.map(chatId => notifyIsp(bot.telegram, power, chatId))
-      );
-    }
+ping.on("ping", (host, state) => events.onState(host, state));
 
-    await storage.setPowerIspState(host.host, power, isp);
-  }
-);
+await ping.start();
 
-monitoring.start();
 log.info("Started monitoring. Version " + __VERSION__);
 await bot.launch();
-
