@@ -1,12 +1,16 @@
 import tcpp from "tcp-ping";
 import ping from "ping";
 
-export async function pingHost(host: string): Promise<string | undefined> {
+export async function pingHost(
+  host: string,
+  deadline = 5,
+  timeout = 1,
+): Promise<string | undefined> {
   const numeric = /^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$/.test(host);
 
   const result = await ping.promise.probe(host, {
-    deadline: 5,
-    timeout: 1,
+    deadline: deadline,
+    timeout,
     numeric,
   });
 

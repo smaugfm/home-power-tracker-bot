@@ -2,6 +2,7 @@ import { Event, PowerIspState } from "../types";
 import _ from "lodash";
 import { NotificationsService } from "../notifications/NotificationsService";
 import { Config } from "../config/Config";
+import { log } from "../log/log";
 
 export class EventsService {
   private notifications: NotificationsService;
@@ -16,6 +17,9 @@ export class EventsService {
       const events = this.computeEvents(current, state);
 
       if (events.length > 0) {
+        log.info(
+          `"${configuration.host.host}" events: ${events.map(e => JSON.stringify(e)).join(",")}`,
+        );
         await Promise.all([events.map(e => this.notifications.notify(configuration, e))]);
 
         configuration.state = state;
@@ -26,7 +30,7 @@ export class EventsService {
 
   private computeEvents(current: PowerIspState, state: PowerIspState): Event[] {
     const events: Event[] = [];
-    const time = Temporal.Now.zonedDateTimeISO().toString()
+    const time = Temporal.Now.zonedDateTimeISO().toString();
     if (current.power !== state.power) {
       const event: Event = {
         type: "power",

@@ -15,6 +15,7 @@ export class PingService extends (EventEmitter as new () => TypedEmitter<PingSer
   private readonly intervalMs: number;
   private readonly configs: Config[];
   private timer: NodeJS.Timer | undefined;
+  private enabled = false;
 
   constructor(configs: Config[], interval: number) {
     super();
@@ -50,11 +51,17 @@ export class PingService extends (EventEmitter as new () => TypedEmitter<PingSer
   }
 
   async start() {
+    this.enabled = true;
+    log.info("Started ping monitoring")
     await this.ping();
-    this.timer = setInterval(() => this.ping(), this.intervalMs);
+    this.timer = setInterval(() => {
+      if (this.enabled) this.ping();
+    }, this.intervalMs);
   }
 
   stop() {
+    this.enabled = false;
+    log.info("Stopped ping monitoring")
     if (this.timer) clearInterval(this.timer);
   }
 }

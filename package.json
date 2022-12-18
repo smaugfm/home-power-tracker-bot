@@ -22,6 +22,8 @@
     "dotenv": "^10.0.0",
     "i": "^0.3.7",
     "intl-messageformat": "^10.2.5",
+    "is-online": "^10.0.0",
+    "is-reachable": "^5.2.1",
     "lodash": "^4.17.21",
     "moment": "^2.29.4",
     "ping": "^0.4.2",
