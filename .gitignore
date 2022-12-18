@@ -1,7 +1,7 @@
 .env
 session.json
 docker-compose.yml
-db-backup.json
+db.json
 
 # dependencies
 /node_modules
