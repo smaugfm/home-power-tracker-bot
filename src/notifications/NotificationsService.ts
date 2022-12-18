@@ -27,6 +27,15 @@ export class NotificationsService {
     );
   }
 
+  private async sendTelegramMessage(chatId: number, message: string) {
+    try {
+      return await this.bot.sendMessage(chatId, message);
+    } catch (e) {
+      log.error(`Error sending message to ${chatId}: `, e);
+      return;
+    }
+  }
+
   private getMessage(config: Config, event: Event) {
     let msg = "";
     switch (event.type) {
@@ -47,33 +56,26 @@ export class NotificationsService {
     return `${msg}.\n\n${this.getStatsMessage(stats)}`;
   }
 
-  private async sendTelegramMessage(chatId: number, message: string) {
-    try {
-      return await this.bot.sendMessage(chatId, message);
-    } catch (e) {
-      log.error(`Error sending message to ${chatId}: `, e);
-      return;
-    }
-  }
-
-  private format(duration: Temporal.Duration) {
-    return durationFormat.format(duration.total("seconds"));
-  }
-
   private getStatsMessage(stats: Stats): string {
     switch (stats.type) {
       case "empty":
         return "";
       case "ispUp":
-        return `Його не було ${this.format(stats.lastInverse)}`;
+        return "Скільки не було: " + this.humanize(stats.lastInverse);
       case "ispDown":
-        return `Він тримався ${this.format(stats.lastInverse)}${
-          stats.lastPowerUp ? `. Акумулятори заряджались ${this.format(stats.lastPowerUp)}` : ""
+        return `Скільки тримався: ${this.humanize(stats.lastInverse)}${
+          stats.lastPowerUp
+            ? `. Тривалість останньої зарядки акумуляторів: ${this.humanize(stats.lastPowerUp)}`
+            : ""
         }`;
       case "powerUp":
-        return `Його не було ${this.format(stats.lastInverse)}`;
+        return `Скільки не було: ${this.humanize(stats.lastInverse)}`;
       case "powerDown":
-        return `Воно було ${this.format(stats.lastInverse)}`;
+        return `Скільки трималось: ${this.humanize(stats.lastInverse)}`;
     }
+  }
+
+  private humanize(duration: Temporal.Duration) {
+    return durationFormat.format(duration.total("seconds"));
   }
 }
