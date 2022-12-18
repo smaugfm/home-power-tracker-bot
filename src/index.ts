@@ -25,6 +25,6 @@ ping.on("ping", (host, state) => events.onState(host, state));
 
 await ping.start();
 
-log.info("Started...");
+log.info("Started. Current time: " + Temporal.Now.zonedDateTimeISO().toString());
 
 await bot.launch();
