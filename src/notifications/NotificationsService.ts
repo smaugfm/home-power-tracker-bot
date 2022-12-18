@@ -41,11 +41,11 @@ export class NotificationsService {
     switch (event.type) {
       case "isp":
         msg = `${event.state ? "🟩" : "🟥"} ${
-          event.state ? "Інтернет з'явився" : "Інтернет пропав"
+          event.state ? "Інтернет з'явився" : "Інтернет зник"
         }`;
         break;
       case "power":
-        msg = `${event.state ? "🟢" : "🔴"} Світло ${event.state ? "відновлено" : "пропало"}`;
+        msg = `${event.state ? "🟢" : "🔴"} Світло ${event.state ? "відновлено" : "зникло"}`;
         break;
       default:
         throw new Error("Unknown event type: " + event.type);
