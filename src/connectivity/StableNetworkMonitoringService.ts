@@ -46,7 +46,7 @@ export class StableNetworkMonitoringService extends (EventEmitter as new () => T
     const online = await this.isOnlineComposite();
     if (!online) {
       if (this.successfulTriesAfterDrop > 1) {
-        log.info(`Network fail after ${this.successfulTriesAfterDrop} attempt`);
+        log.info(`Network fail after ${this.successfulTriesAfterDrop} attempts`);
       }
       this.successfulTriesAfterDrop = 0;
     }
@@ -57,6 +57,7 @@ export class StableNetworkMonitoringService extends (EventEmitter as new () => T
         this.emit("status", false);
       } else if (++this.successfulTriesAfterDrop >= this.options.consecutiveTriesToConsiderOnline) {
         this.statusField = true;
+        this.successfulTriesAfterDrop = 0;
         log.info(`Network is STABLE again`);
         this.emit("status", true);
       }
