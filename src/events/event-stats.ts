@@ -2,23 +2,31 @@ import { Event, IspDownStats, Stats } from "../types";
 import { Config } from "../config/Config";
 import _ from "lodash";
 import { between } from "../util/temporal";
+import { log } from "../log/log";
 
 export function getStatsForEvent(config: Config, event: Event): Stats {
-  switch (event.type) {
-    case "isp":
-      if (event.state) {
-        return getLastInverseStats(config, event);
-      } else {
-        return getIspDownStats(config, event);
-      }
-    case "power":
-      if (event.state) {
-        return getLastInverseStats(config, event);
-      } else {
-        return getLastInverseStats(config, event);
-      }
-    default:
-      throw new Error("Unknown event type: " + event.type);
+  try {
+    switch (event.type) {
+      case "isp":
+        if (event.state) {
+          return getLastInverseStats(config, event);
+        } else {
+          return getIspDownStats(config, event);
+        }
+      case "power":
+        if (event.state) {
+          return getLastInverseStats(config, event);
+        } else {
+          return getLastInverseStats(config, event);
+        }
+      default:
+        throw new Error("Unknown event type: " + event.type);
+    }
+  } catch (e) {
+    log.error(e);
+    return {
+      type: "empty",
+    };
   }
 }
 
@@ -53,7 +61,7 @@ function getLastEvent(
 ): Event {
   const lastIspUpEvent = _.findLast(config.events, e => e.type === type && predicate(e));
   if (!lastIspUpEvent) {
-    throw new Error("Could not find event");
+    throw new Error("Could not find last event.");
   }
   return lastIspUpEvent;
 }
