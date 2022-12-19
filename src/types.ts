@@ -52,4 +52,5 @@ export type IspUpStats = LastInverse & {
 export type IspDownStats = LastInverse & {
   type: "ispDown";
   lastPowerUp?: Temporal.Duration;
+  sinceLastPowerDown?: Temporal.Duration;
 };

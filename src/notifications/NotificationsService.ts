@@ -40,9 +40,7 @@ export class NotificationsService {
     let msg = "";
     switch (event.type) {
       case "isp":
-        msg = `${event.state ? "🟩" : "🟥"} ${
-          event.state ? "Інтернет з'явився" : "Інтернет зник"
-        }`;
+        msg = `${event.state ? "🟩" : "🟥"} ${event.state ? "Інтернет з'явився" : "Інтернет зник"}`;
         break;
       case "power":
         msg = `${event.state ? "🟢" : "🔴"} Світло ${event.state ? "відновлено" : "зникло"}`;
@@ -62,12 +60,16 @@ export class NotificationsService {
         return "";
       case "ispUp":
         return "Скільки не було: " + this.humanize(stats.lastInverse);
-      case "ispDown":
-        return `Скільки тримався: ${this.humanize(stats.lastInverse)}${
-          stats.lastPowerUp
-            ? `. Тривалість останньої зарядки акумуляторів: ${this.humanize(stats.lastPowerUp)}`
-            : ""
-        }`;
+      case "ispDown": {
+        let str = `Час з останнього відключення: ${this.humanize(stats.lastInverse)}.`;
+        if (stats.sinceLastPowerDown)
+          str += `\nЧас роботи на ДБЖ: ${this.humanize(stats.sinceLastPowerDown)}`;
+        if (stats.lastPowerUp)
+          str += `\nТривалість останньої зарядки акумуляторів ДБЖ: ${this.humanize(
+            stats.lastPowerUp,
+          )}`;
+        return str;
+      }
       case "powerUp":
         return `Скільки не було: ${this.humanize(stats.lastInverse)}`;
       case "powerDown":
