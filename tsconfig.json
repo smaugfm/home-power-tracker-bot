@@ -27,13 +27,18 @@
     "preserveConstEnums": true,
     "sourceMap": true,
     "downlevelIteration": true,
-    "allowJs": true
+    "allowJs": true,
+    "types": [
+      "node",
+      "@types/jest"
+    ]
   },
   "ts-node": {
     "esm": true,
     "experimentalSpecifierResolution": "node"
   },
   "include": [
-    "./src/**/*"
+    "src/**/*",
+    "test/**/*"
   ]
 }

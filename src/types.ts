@@ -13,8 +13,10 @@ export type NotificationSettings = {
   isp: boolean;
 };
 
-export type Event = {
-  type: "isp" | "power";
+export type EventType = "power" | "isp";
+
+export type EventObject = {
+  type: EventType;
   state: boolean;
   time: string;
 };
@@ -24,10 +26,16 @@ export interface ConfigurationData {
   state: PowerIspState;
   notificationSettings: NotificationSettings;
   telegramChatIds: number[];
-  events: Event[];
+  events: EventObject[];
 }
 
-export type Stats = IspUpStats | IspDownStats | PowerUpStats | PowerDownStats | EmptyStats;
+export type Stats = SingleEventStats | SummaryStats;
+
+export type SingleEventStats = IspUpStats | IspDownStats | PowerUpStats | PowerDownStats | EmptyStats;
+
+export type SummaryStats = LastPeriodSummaryStats & {
+  type: EventType;
+} | EmptyStats;
 
 export interface LastInverse {
   lastInverse: Temporal.Duration;
@@ -54,3 +62,10 @@ export type IspDownStats = LastInverse & {
   lastPowerUp?: Temporal.Duration;
   sinceLastPowerDown?: Temporal.Duration;
 };
+
+export interface LastPeriodSummaryStats {
+  summaryType: "day" | "week" | "month";
+  upTotal: Temporal.Duration;
+  downTotal: Temporal.Duration;
+  upPercent: number;
+}

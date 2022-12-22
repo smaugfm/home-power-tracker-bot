@@ -1,9 +1,10 @@
 import { Telegram } from "telegraf";
 import DurationUnitFormat from "../intl-unofficial-duration-unit-format-3.1.0";
 import { log } from "../log/log";
-import { Event, Stats } from "../types";
+import { Stats } from "../types";
 import { Config } from "../config/Config";
-import { getStatsForEvent } from "../events/event-stats";
+import { getStatsForEvent } from "../stats/eventStats";
+import { Event } from "../events/Event";
 
 const durationFormat = new DurationUnitFormat("uk-UA", {
   style: "long",
@@ -48,10 +49,10 @@ export class NotificationsService {
       default:
         throw new Error("Unknown event type: " + event.type);
     }
-    const stats = getStatsForEvent(config, event);
+    const [stats] = getStatsForEvent(config, event);
     if (!stats || stats.type === "empty") return msg;
 
-    return `${msg}.\n\n${this.getStatsMessage(stats)}`;
+    return `${msg}\n\n${this.getStatsMessage(stats)}`;
   }
 
   private getStatsMessage(stats: Stats): string {
@@ -61,9 +62,9 @@ export class NotificationsService {
       case "ispUp":
         return "Скільки не було: " + this.humanize(stats.lastInverse);
       case "ispDown": {
-        let str = `Час з останнього відключення: ${this.humanize(stats.lastInverse)}.`;
+        let str = `Скільки був: ${this.humanize(stats.lastInverse)}.`;
         if (stats.sinceLastPowerDown)
-          str += `\nЧас роботи на ДБЖ: ${this.humanize(stats.sinceLastPowerDown)}`;
+          str += `\nЗ цього, працював ДБЖ: ${this.humanize(stats.sinceLastPowerDown)}`;
         if (stats.lastPowerUp)
           str += `\nТривалість останньої зарядки акумуляторів ДБЖ: ${this.humanize(
             stats.lastPowerUp,
@@ -74,6 +75,8 @@ export class NotificationsService {
         return `Скільки не було: ${this.humanize(stats.lastInverse)}`;
       case "powerDown":
         return `Скільки трималось: ${this.humanize(stats.lastInverse)}`;
+      default:
+        return "";
     }
   }
 

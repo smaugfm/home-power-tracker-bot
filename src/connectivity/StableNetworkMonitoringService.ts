@@ -17,7 +17,7 @@ export interface ConnectivityServiceOptions {
 
 export class StableNetworkMonitoringService extends (EventEmitter as new () => TypedEmitter<ConnectivityServiceEvents>) {
   private readonly options: ConnectivityServiceOptions;
-  private statusField = false;
+  private status = false;
   private successfulTriesAfterDrop = 0;
 
   constructor(options: ConnectivityServiceOptions) {
@@ -46,20 +46,22 @@ export class StableNetworkMonitoringService extends (EventEmitter as new () => T
     const online = await this.isOnlineComposite();
     if (!online) {
       if (this.successfulTriesAfterDrop > 1) {
-        log.info(`Network fail after ${this.successfulTriesAfterDrop} attempts`);
+        log.info(`Network still has issues. Ping attempt #${this.successfulTriesAfterDrop} failed`);
       }
       this.successfulTriesAfterDrop = 0;
     }
-    if (online != this.statusField) {
-      if (!online) {
-        this.statusField = false;
+    if (online != this.status) {
+      if (online) {
+        if (++this.successfulTriesAfterDrop >= this.options.consecutiveTriesToConsiderOnline) {
+          this.status = true;
+          this.successfulTriesAfterDrop = 0;
+          log.info(`Network is STABLE again`);
+          this.emit("status", true);
+        }
+      } else {
+        this.status = false;
         log.error("Network ISSUES detected");
         this.emit("status", false);
-      } else if (++this.successfulTriesAfterDrop >= this.options.consecutiveTriesToConsiderOnline) {
-        this.statusField = true;
-        this.successfulTriesAfterDrop = 0;
-        log.info(`Network is STABLE again`);
-        this.emit("status", true);
       }
     }
   }
