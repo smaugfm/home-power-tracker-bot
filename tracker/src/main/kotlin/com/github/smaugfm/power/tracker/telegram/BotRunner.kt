@@ -1,20 +1,9 @@
 package com.github.smaugfm.power.tracker.telegram
 
-import dev.inmo.tgbotapi.bot.ktor.telegramBot
 import dev.inmo.tgbotapi.extensions.api.bot.getMe
-import dev.inmo.tgbotapi.extensions.api.send.reply
-import dev.inmo.tgbotapi.extensions.api.send.send
 import dev.inmo.tgbotapi.extensions.api.send.sendTextMessage
-import dev.inmo.tgbotapi.extensions.behaviour_builder.buildBehaviour
-import dev.inmo.tgbotapi.extensions.behaviour_builder.buildBehaviourWithLongPolling
-import dev.inmo.tgbotapi.extensions.behaviour_builder.defaultCoroutineScopeProvider
-import dev.inmo.tgbotapi.extensions.behaviour_builder.expectations.waitAnimation
-import dev.inmo.tgbotapi.extensions.behaviour_builder.expectations.waitText
 import dev.inmo.tgbotapi.extensions.behaviour_builder.telegramBotWithBehaviourAndLongPolling
 import dev.inmo.tgbotapi.extensions.behaviour_builder.triggers_handling.onCommand
-import dev.inmo.tgbotapi.extensions.utils.updates.flowsUpdatesFilter
-import dev.inmo.tgbotapi.extensions.utils.updates.retrieving.longPolling
-import dev.inmo.tgbotapi.types.message.textsources.regular
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
@@ -32,6 +21,10 @@ class BotRunner(
     @Value("\${bot.token}") private val token: String,
 ) : CommandLineRunner {
     override fun run(vararg args: String?) {
+        startBotBlocking()
+    }
+
+    private fun startBotBlocking() {
         runBlocking {
             val (bot, job) = telegramBotWithBehaviourAndLongPolling(
                 token,

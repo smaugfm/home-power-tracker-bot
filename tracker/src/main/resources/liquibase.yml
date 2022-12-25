@@ -1,0 +1,16 @@
+databaseChangeLog:
+  - changeSet:
+      id: 01
+      author: smaugfm
+      changes:
+        - createTable:
+            tableName: tb_configs
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  constraints:
+                    primaryKeyName: pkey_tb_configs
+                    unique: true
+                    primaryKey: true
+                    nullable: false
