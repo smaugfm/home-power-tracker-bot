@@ -3,14 +3,97 @@ databaseChangeLog:
       id: 01
       author: smaugfm
       changes:
+        - createSequence:
+            sequenceName: sq_tb_configs
+            startValue: 1
+            incrementBy: 1
+            cacheSize: 1
+        - createSequence:
+            sequenceName: sq_tb_events
+            startValue: 1
+            incrementBy: 1
+            cacheSize: 1
+  - changeSet:
+      id: 02
+      author: smaugfm
+      changes:
         - createTable:
             tableName: tb_configs
             columns:
               - column:
                   name: id
                   type: bigint
+                  defaultValueComputed: nextval('sq_tb_configs')
                   constraints:
-                    primaryKeyName: pkey_tb_configs
-                    unique: true
                     primaryKey: true
+                    primaryKeyName: pkey_tb_agents
+              - column:
+                  name: address
+                  type: varchar
+                  constraints:
                     nullable: false
+              - column:
+                  name: port
+                  type: smallint
+                  constraints:
+                    nullable: true
+              - column:
+                  name: notify_power
+                  type: boolean
+                  constraints:
+                    nullable: false
+                    defaultValue: true
+              - column:
+                  name: notify_isp
+                  type: boolean
+                  constraints:
+                    nullable: false
+                    defaultValue: true
+        - createTable:
+            tableName: tb_telegram_chat_ids
+            columns:
+              - column:
+                  name: chat_id
+                  type: int
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pkey_tb_telegram
+              - column:
+                  name: config_id
+                  type: bigint
+                  constraints:
+                    foreignKeyName: fkey_tb_configs
+                    reference: tb_configs(id)
+        - createTable:
+            tableName: tb_events
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  defaultValueComputed: nextval('sq_tb_events')
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pkey_tb_events
+              - column:
+                  name: config_id
+                  type: bigint
+                  constraints:
+                    foreignKeyName: fkey_tb_configs
+                    reference: tb_configs(id)
+              - column:
+                  name: type
+                  type: varchar
+                  constraints:
+                    nullable: false
+              - column:
+                  name: state
+                  type: boolean
+                  constraints:
+                    nullable: false
+              - column:
+                  name: timestamp
+                  type: timestamp with time zone
+                  constraints:
+                    nullable: false
+
+

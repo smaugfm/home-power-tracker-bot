@@ -1,7 +1,5 @@
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
+package com.github.smaugfm.power.tracker.network
+
 import mu.KotlinLogging
 import java.net.ConnectException
 import java.net.InetAddress
@@ -13,29 +11,24 @@ import kotlin.time.DurationUnit
 
 private val log = KotlinLogging.logger { }
 
-fun CoroutineScope.isIcmpReachable(address: InetAddress, timeout: Duration): Deferred<Boolean> {
-    return async(Dispatchers.IO) {
-        address.isReachable(timeout.toInt(DurationUnit.MILLISECONDS))
-    }
-}
+fun isIcmpReachable(address: InetAddress, timeout: Duration): Boolean =
+    address.isReachable(timeout.toInt(DurationUnit.MILLISECONDS))
 
-fun CoroutineScope.isTcpReachable(
+fun isTcpReachable(
     address: InetSocketAddress,
     timeout: Duration
-): Deferred<Boolean> {
+): Boolean {
     val socket = Socket()
     val timeoutMs = timeout.toInt(DurationUnit.MILLISECONDS)
-    return async(Dispatchers.IO) {
-        socket.soTimeout = timeoutMs
-        try {
-            socket.connect(address, timeoutMs)
-            true
-        } catch (e: SocketTimeoutException) {
-            log.info { "TCP ping to $address: timed out." }
-            false
-        } catch (e: ConnectException) {
-            log.info { "TCP ping to $address: connection refused" }
-            false
-        }
+    socket.soTimeout = timeoutMs
+    return try {
+        socket.connect(address, timeoutMs)
+        true
+    } catch (e: SocketTimeoutException) {
+        log.info { "TCP ping to $address: timed out." }
+        false
+    } catch (e: ConnectException) {
+        log.info { "TCP ping to $address: connection refused" }
+        false
     }
 }
