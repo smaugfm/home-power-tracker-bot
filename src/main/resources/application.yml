@@ -3,3 +3,7 @@ spring:
     banner-mode: off
   liquibase:
     change-log: liquibase.yml
+    default-schema: public
+    liquibase-schema: public
+  datasource:
+    driver-class-name: org.postgresql.Driver

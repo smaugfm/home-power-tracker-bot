@@ -13,6 +13,11 @@ databaseChangeLog:
             startValue: 1
             incrementBy: 1
             cacheSize: 1
+        - createSequence:
+            sequenceName: sq_tb_telegram_messages
+            startValue: 1
+            incrementBy: 1
+            cacheSize: 1
   - changeSet:
       id: 02
       author: smaugfm
@@ -62,7 +67,8 @@ databaseChangeLog:
                   name: config_id
                   type: bigint
                   constraints:
-                    foreignKeyName: fkey_tb_configs
+                    nullable: false
+                    foreignKeyName: fkey_tb_telegram_chat_ids_tb_configs
                     reference: tb_configs(id)
         - createTable:
             tableName: tb_events
@@ -78,7 +84,8 @@ databaseChangeLog:
                   name: config_id
                   type: bigint
                   constraints:
-                    foreignKeyName: fkey_tb_configs
+                    nullable: false
+                    foreignKeyName: fkey_tb_events_tb_configs
                     reference: tb_configs(id)
               - column:
                   name: type
@@ -91,9 +98,23 @@ databaseChangeLog:
                   constraints:
                     nullable: false
               - column:
-                  name: timestamp
+                  name: created
                   type: timestamp with time zone
                   constraints:
                     nullable: false
-
-
+        - createTable:
+            tableName: tb_telegram_messages
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  defaultValueComputed: nextval('sq_tb_telegram_messages')
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pkey_tb_telegram_messages
+              - column:
+                  name: chat_id
+                  type: int
+                  constraints:
+                    foreignKeyName: fkey_tb_telegram_messages_tb_telegram_chat_ids
+                    reference: tb_telegram_chat_ids(chat_id)
