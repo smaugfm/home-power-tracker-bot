@@ -1,4 +1,4 @@
-package com.github.smaugfm.power.tracker.telegram
+package com.github.smaugfm.power.tracker.interaction.telegram
 
 import dev.inmo.tgbotapi.extensions.api.bot.getMe
 import dev.inmo.tgbotapi.extensions.api.send.sendTextMessage

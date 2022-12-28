@@ -1,6 +1,6 @@
 package com.github.smaugfm.power.tracker.persistence
 
-import com.github.smaugfm.power.tracker.events.EventType
+import com.github.smaugfm.power.tracker.dto.EventType
 import jakarta.persistence.CascadeType
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
@@ -24,11 +24,10 @@ class ConfigEntity(
     @NotBlank
     @Column(nullable = false)
     val address: String,
-    @Column(nullable = false)
-    val port: Short,
-    @Column(name = "notify_power")
+    val port: Int?,
+    @Column(name = "notify_power", nullable = false)
     val notifyPower: Boolean,
-    @Column(name = "notify_isp")
+    @Column(name = "notify_isp", nullable = false)
     val notifyIsp: Boolean,
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sq_tb_configs")

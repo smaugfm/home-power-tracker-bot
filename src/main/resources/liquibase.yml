@@ -39,7 +39,7 @@ databaseChangeLog:
                     nullable: false
               - column:
                   name: port
-                  type: smallint
+                  type: int
                   constraints:
                     nullable: true
               - column:

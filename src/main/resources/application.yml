@@ -7,3 +7,7 @@ spring:
     liquibase-schema: public
   datasource:
     driver-class-name: org.postgresql.Driver
+app:
+  loop:
+    interval: 10s
+    reachable-timeout: 10s
