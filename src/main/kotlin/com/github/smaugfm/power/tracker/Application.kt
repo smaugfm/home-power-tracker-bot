@@ -1,6 +1,6 @@
 package com.github.smaugfm.power.tracker
 
-import com.github.smaugfm.power.tracker.spring.KotlinLaunchAdapter
+import com.github.smaugfm.power.tracker.spring.CoroutinesLaunchAdapter
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
@@ -17,7 +17,7 @@ class Application
 suspend fun main(args: Array<String>) {
     val context = runApplication<Application>(*args)
     supervisorScope {
-        context.getBeansOfType(KotlinLaunchAdapter::class.java)
+        context.getBeansOfType(CoroutinesLaunchAdapter::class.java)
             .values.map {
                 launch { it.launch() }
             }.joinAll()

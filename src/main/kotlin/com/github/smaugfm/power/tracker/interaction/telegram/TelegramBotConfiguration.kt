@@ -1,12 +1,10 @@
 package com.github.smaugfm.power.tracker.interaction.telegram
 
-import com.github.smaugfm.power.tracker.spring.KotlinLaunchAdapter
+import com.github.smaugfm.power.tracker.spring.CoroutinesLaunchAdapter
 import dev.inmo.tgbotapi.bot.TelegramBot
 import dev.inmo.tgbotapi.bot.ktor.telegramBot
 import dev.inmo.tgbotapi.extensions.api.bot.getMe
 import dev.inmo.tgbotapi.extensions.behaviour_builder.buildBehaviourWithLongPolling
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.ApplicationContext
@@ -29,8 +27,8 @@ class TelegramBotConfiguration {
     fun startBotJob(
         context: ApplicationContext,
         bot: TelegramBot,
-    ): KotlinLaunchAdapter {
-        return object : KotlinLaunchAdapter {
+    ): CoroutinesLaunchAdapter {
+        return object : CoroutinesLaunchAdapter {
             override suspend fun launch() {
                 val job = bot.buildBehaviourWithLongPolling {
 

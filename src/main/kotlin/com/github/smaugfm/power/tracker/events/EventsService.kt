@@ -11,8 +11,10 @@ interface EventsService {
     suspend fun deleteAndGetLaterEvents(eventId: EventId): Flow<Event>
 
     suspend fun getCurrentState(configId: ConfigId): PowerIspState
+
     fun calculateAddEvents(
         prevState: PowerIspState,
-        currentState: PowerIspState
-    ): List<Event>
+        currentState: PowerIspState,
+        configId: ConfigId
+    ): Flow<Event>
 }

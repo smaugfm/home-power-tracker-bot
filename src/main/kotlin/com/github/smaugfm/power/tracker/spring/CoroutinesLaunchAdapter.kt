@@ -1,5 +1,5 @@
 package com.github.smaugfm.power.tracker.spring
 
-interface KotlinLaunchAdapter {
+interface CoroutinesLaunchAdapter {
     suspend fun launch()
 }

@@ -40,18 +40,54 @@ class EventsServiceImpl(
 
     override fun calculateAddEvents(
         prevState: PowerIspState,
-        currentState: PowerIspState
-    ): List<Event> {
-        TODO("Not yet implemented")
+        currentState: PowerIspState,
+        configId: ConfigId,
+    ): Flow<Event> {
+        val events = calculateEvents(prevState, currentState, configId)
+        return eventsRepository
+            .saveAll(events.map { EventEntity(it.state, it.type, it.configId) })
+            .asFlow()
+            .map { Event(it.id, it.state, it.type, it.configId, it.created) }
     }
 
     override suspend fun getCurrentState(configId: ConfigId) =
         supervisorScope {
             val power =
-                eventsRepository.findCurrentState(configId, EventType.POWER).awaitFirstOrNull()
+                eventsRepository.findTop1ByConfigIdAndTypeOrderByCreatedDesc(
+                    configId,
+                    EventType.POWER
+                ).awaitFirstOrNull()?.state
             val isp =
-                eventsRepository.findCurrentState(configId, EventType.ISP).awaitFirstOrNull()
+                eventsRepository.findTop1ByConfigIdAndTypeOrderByCreatedDesc(
+                    configId,
+                    EventType.ISP
+                ).awaitFirstOrNull()?.state
 
             PowerIspState(power, isp)
         }
+
+    private fun calculateEvents(
+        prevState: PowerIspState,
+        currentState: PowerIspState,
+        configId: ConfigId
+    ): List<NewEvent> {
+        return listOfNotNull(
+            if (prevState.hasPower != currentState.hasPower) NewEvent(
+                currentState.hasPower!!,
+                EventType.POWER,
+                configId
+            ) else null,
+            if (prevState.hasIsp != currentState.hasIsp) NewEvent(
+                currentState.hasIsp!!,
+                EventType.POWER,
+                configId
+            ) else null
+        )
+    }
+
+    private data class NewEvent(
+        val state: Boolean,
+        val type: EventType,
+        val configId: ConfigId,
+    )
 }

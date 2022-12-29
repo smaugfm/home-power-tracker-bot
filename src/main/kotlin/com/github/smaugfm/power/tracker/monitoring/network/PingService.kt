@@ -1,4 +1,4 @@
-package com.github.smaugfm.power.tracker.network
+package com.github.smaugfm.power.tracker.monitoring.network
 
 import com.github.smaugfm.power.tracker.dto.Monitorable
 import com.github.smaugfm.power.tracker.dto.PowerIspState

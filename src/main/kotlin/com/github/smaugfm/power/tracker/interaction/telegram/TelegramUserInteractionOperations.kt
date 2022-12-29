@@ -12,13 +12,10 @@ import dev.inmo.tgbotapi.bot.TelegramBot
 import dev.inmo.tgbotapi.extensions.api.send.sendTextMessage
 import dev.inmo.tgbotapi.types.ChatId
 import dev.inmo.tgbotapi.types.message.MarkdownV2ParseMode
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.reactive.asFlow
-import kotlinx.coroutines.reactive.awaitFirst
 import kotlinx.coroutines.reactive.awaitFirstOrNull
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 
@@ -35,9 +32,14 @@ class TelegramUserInteractionOperations(
 
         chatIdRepository.findAllByConfigId(event.configId).asFlow().collect {
             val msg = bot.sendTextMessage(ChatId(it.chatId), text, MarkdownV2ParseMode)
-            val messageEntity = TelegramMessageEntity(msg.messageId, it.chatId, it.configId)
 
-            messagesRepository.save(messageEntity).awaitFirstOrNull()
+            messagesRepository.save(
+                TelegramMessageEntity(
+                    msg.messageId,
+                    it.chatId,
+                    it.configId
+                )
+            ).awaitSingleOrNull()
         }
     }
 
