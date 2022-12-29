@@ -1,18 +1,18 @@
 package com.github.smaugfm.power.tracker.dto
 
-import com.github.smaugfm.power.tracker.persistence.TelegramChatIdEntity
-import jakarta.persistence.OneToMany
 import java.time.ZonedDateTime
 
 data class Event(
     val id: EventId,
     val state: Boolean,
     val type: EventType,
-    val configId: Long,
+    val configId: ConfigId,
     val time: ZonedDateTime
 )
 
 typealias EventId = Long;
+typealias ConfigId = Long;
+typealias MessageId = dev.inmo.tgbotapi.types.MessageId
 
 enum class EventType {
     POWER,
@@ -25,7 +25,7 @@ data class PowerIspState(
 )
 
 data class Monitorable(
-    val id: Long,
+    val id: ConfigId,
     val address: String,
     val port: Int?,
 )

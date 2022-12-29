@@ -55,22 +55,6 @@ databaseChangeLog:
                     nullable: false
                     defaultValue: true
         - createTable:
-            tableName: tb_telegram_chat_ids
-            columns:
-              - column:
-                  name: chat_id
-                  type: int
-                  constraints:
-                    primaryKey: true
-                    primaryKeyName: pkey_tb_telegram
-              - column:
-                  name: config_id
-                  type: bigint
-                  constraints:
-                    nullable: false
-                    foreignKeyName: fkey_tb_telegram_chat_ids_tb_configs
-                    reference: tb_configs(id)
-        - createTable:
             tableName: tb_events
             columns:
               - column:
@@ -103,6 +87,22 @@ databaseChangeLog:
                   constraints:
                     nullable: false
         - createTable:
+            tableName: tb_telegram_chat_ids
+            columns:
+              - column:
+                  name: chat_id
+                  type: bigint
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pkey_tb_telegram
+              - column:
+                  name: config_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fkey_tb_telegram_chat_ids_tb_configs
+                    reference: tb_configs(id)
+        - createTable:
             tableName: tb_telegram_messages
             columns:
               - column:
@@ -113,8 +113,21 @@ databaseChangeLog:
                     primaryKey: true
                     primaryKeyName: pkey_tb_telegram_messages
               - column:
-                  name: chat_id
-                  type: int
+                  name: message_id
+                  type: bigint
                   constraints:
+                    nullable: false
+              - column:
+                  name: event_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fkey_tb_telegram_messages_tb_events
+                    reference: tb_events(id)
+              - column:
+                  name: chat_id
+                  type: bigint
+                  constraints:
+                    nullable: false
                     foreignKeyName: fkey_tb_telegram_messages_tb_telegram_chat_ids
                     reference: tb_telegram_chat_ids(chat_id)

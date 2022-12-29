@@ -25,9 +25,10 @@ repositories {
 }
 
 dependencies {
-    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation("org.springframework:spring-jdbc")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
@@ -36,10 +37,13 @@ dependencies {
     implementation("io.github.microutils:kotlin-logging-jvm:3.0.4")
     implementation("dev.inmo:tgbotapi:4.2.2")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
-    runtimeOnly("com.h2database:h2")
     runtimeOnly("org.postgresql:postgresql")
+    runtimeOnly("org.postgresql:r2dbc-postgresql")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+    testImplementation("com.h2database:h2")
+    testImplementation("io.r2dbc:r2dbc-h2")
     testImplementation("org.springframework.boot:spring-boot-starter-test")
+    testImplementation("com.willowtreeapps.assertk:assertk-jvm:0.25")
     testImplementation("io.projectreactor:reactor-test")
 }
 

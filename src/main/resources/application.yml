@@ -5,8 +5,10 @@ spring:
     change-log: liquibase.yml
     default-schema: public
     liquibase-schema: public
-  datasource:
-    driver-class-name: org.postgresql.Driver
+  r2dbc:
+    pool:
+      initial-size: 5
+      max-size: 10
 app:
   loop:
     interval: 10s

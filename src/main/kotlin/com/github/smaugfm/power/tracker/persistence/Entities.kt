@@ -1,73 +1,57 @@
 package com.github.smaugfm.power.tracker.persistence
 
 import com.github.smaugfm.power.tracker.dto.EventType
-import jakarta.persistence.CascadeType
-import jakarta.persistence.Column
-import jakarta.persistence.Entity
-import jakarta.persistence.EnumType
-import jakarta.persistence.Enumerated
-import jakarta.persistence.GeneratedValue
-import jakarta.persistence.GenerationType
-import jakarta.persistence.Id
-import jakarta.persistence.JoinColumn
-import jakarta.persistence.ManyToOne
-import jakarta.persistence.OneToMany
-import jakarta.persistence.SequenceGenerator
-import jakarta.persistence.Table
-import jakarta.validation.constraints.NotBlank
 import org.springframework.data.annotation.CreatedDate
+import org.springframework.data.annotation.Id
+import org.springframework.data.relational.core.mapping.Column
+import org.springframework.data.relational.core.mapping.Table
 import java.time.ZonedDateTime
 
-@Entity
 @Table(name = "tb_configs")
 class ConfigEntity(
-    @NotBlank
-    @Column(nullable = false)
+    @Column
     val address: String,
     val port: Int?,
-    @Column(name = "notify_power", nullable = false)
-    val notifyPower: Boolean,
-    @Column(name = "notify_isp", nullable = false)
-    val notifyIsp: Boolean,
+    @Column("notify_power")
+    val notifyPower: Boolean = true,
+    @Column("notify_isp")
+    val notifyIsp: Boolean = true,
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sq_tb_configs")
-    @SequenceGenerator(name = "sq_tb_configs", sequenceName = "sq_tb_configs", allocationSize = 1)
-    val id: Long = 0,
-) {
-    @OneToMany(mappedBy = "config")
-    lateinit var telegramChatIds: Set<TelegramChatIdEntity>
-}
+    var id: Long = 0,
+)
 
-@Entity
-@Table(name = "tb_telegram_chat_ids")
-class TelegramChatIdEntity(
-    @Id
-    @Column(name = "chat_id")
-    val chatId: Int,
-) {
-    @ManyToOne(cascade = [CascadeType.ALL], optional = false)
-    @JoinColumn(name = "config_id")
-    lateinit var config: ConfigEntity
-}
-
-@Entity
 @Table(name = "tb_events")
 class EventEntity(
-    @Column(nullable = false)
+    @Column
     val state: Boolean,
-    @Column(nullable = false)
-    @Enumerated(EnumType.STRING)
+    @Column
     val type: EventType,
+    @Column("config_id")
+    val configId: Long,
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sq_tb_events")
-    @SequenceGenerator(name = "sq_tb_events", sequenceName = "sq_tb_events", allocationSize = 1)
-    val id: Long = 0,
+    var id: Long = 0,
 ) {
-    @ManyToOne(cascade = [CascadeType.ALL], optional = false)
-    @JoinColumn(name = "config_id")
-    lateinit var config: ConfigEntity
-
     @CreatedDate
     lateinit var created: ZonedDateTime
 }
 
+@Table(name = "tb_telegram_chat_ids")
+class TelegramChatIdEntity(
+    @Column("config_id")
+    val configId: Long,
+    @Id
+    @Column("chat_id")
+    var chatId: Long,
+)
+
+@Table(name = "tb_telegram_messages")
+class TelegramMessageEntity(
+    @Column("message_id")
+    val messageId: Long,
+    @Column("chat_id")
+    val chatId: Long,
+    @Column("event_id")
+    val eventId: Long,
+    @Id
+    var id: Long = 0,
+)
