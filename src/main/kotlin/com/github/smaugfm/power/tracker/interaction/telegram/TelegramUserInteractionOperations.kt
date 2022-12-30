@@ -18,6 +18,7 @@ import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
+import java.time.Duration
 
 @Profile("!test")
 @Component
@@ -48,6 +49,10 @@ class TelegramUserInteractionOperations(
     }
 
     override suspend fun postExport(configId: ConfigId, events: Flow<Event>) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun postUnstableNetworkTimeout(duration: Duration) {
         TODO("Not yet implemented")
     }
 

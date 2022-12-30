@@ -1,10 +1,10 @@
 package com.github.smaugfm.power.tracker.persistence
 
 import com.github.smaugfm.power.tracker.dto.EventType
-import org.springframework.data.r2dbc.repository.Query
 import org.springframework.data.r2dbc.repository.R2dbcRepository
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
+import java.time.Instant
 
 interface ConfigsRepository : R2dbcRepository<ConfigEntity, Long> {
 }
@@ -16,6 +16,11 @@ interface EventsRepository : R2dbcRepository<EventEntity, Long> {
     ): Mono<EventEntity>
 
     fun findAllByConfigId(configId: Long): Flux<EventEntity>
+
+    fun findAllByConfigIdAndCreatedIsGreaterThanEqual(
+        configId: Long,
+        after: Instant
+    ): Flux<EventEntity>
 }
 
 interface TelegramChatIdsRepository : R2dbcRepository<TelegramChatIdEntity, Long> {

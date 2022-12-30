@@ -13,3 +13,12 @@ app:
   loop:
     interval: 10s
     reachable-timeout: 10s
+  network-stability:
+    interval: 600ms
+    timeout: 1s
+    stable-network-timeout: 1h
+    consecutive-tries-to-consider-online: 20
+    hosts:
+      - 188.190.254.254
+      - 1.1.1.1
+      - 8.8.8.8

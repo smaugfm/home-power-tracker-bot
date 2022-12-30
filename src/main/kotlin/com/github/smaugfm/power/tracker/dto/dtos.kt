@@ -1,13 +1,13 @@
 package com.github.smaugfm.power.tracker.dto
 
-import java.time.ZonedDateTime
+import java.time.Instant
 
 data class Event(
     val id: EventId,
     val state: Boolean,
     val type: EventType,
     val configId: ConfigId,
-    val time: ZonedDateTime
+    val time: Instant
 )
 
 typealias EventId = Long;

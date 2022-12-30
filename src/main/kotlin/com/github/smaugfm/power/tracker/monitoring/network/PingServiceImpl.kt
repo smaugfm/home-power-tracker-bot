@@ -2,20 +2,23 @@ package com.github.smaugfm.power.tracker.monitoring.network
 
 import com.github.smaugfm.power.tracker.dto.Monitorable
 import com.github.smaugfm.power.tracker.dto.PowerIspState
+import com.github.smaugfm.power.tracker.spring.LaunchCoroutineBean
+import com.github.smaugfm.power.tracker.spring.MainLoopProperties
 import com.github.smaugfm.power.tracker.util.Ping
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
+import kotlinx.coroutines.channels.consume
 import kotlinx.coroutines.supervisorScope
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.net.InetAddress
 import java.net.InetSocketAddress
-import java.time.Duration
 
 @Service
 class PingServiceImpl(
-    @Value("\${app.loop.reachable-timeout}")
-    private val timeout: Duration
+    private val props: MainLoopProperties,
 ) : PingService {
     override suspend fun ping(config: Monitorable) =
         supervisorScope {
@@ -24,11 +27,14 @@ class PingServiceImpl(
                     async(Dispatchers.IO) {
                         Ping.isTcpReachable(
                             InetSocketAddress(config.address, config.port.toInt()),
-                            timeout
+                            props.reachableTimeout
                         )
                     }.await(),
                     async(Dispatchers.IO) {
-                        Ping.isIcmpReachable(InetAddress.getByName(config.address), timeout)
+                        Ping.isIcmpReachable(
+                            InetAddress.getByName(config.address),
+                            props.reachableTimeout
+                        )
                     }.await()
                 )
             } else {
@@ -36,7 +42,7 @@ class PingServiceImpl(
                     async(Dispatchers.IO) {
                         Ping.isIcmpReachable(
                             InetAddress.getByName(config.address),
-                            timeout
+                            props.reachableTimeout
                         )
                     }.await(),
                     null

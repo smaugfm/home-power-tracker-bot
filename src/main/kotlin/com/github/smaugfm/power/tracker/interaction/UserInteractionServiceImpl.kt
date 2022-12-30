@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.flatMapMerge
 import org.springframework.stereotype.Service
+import java.time.Duration
 
 @Service
 @FlowPreview
@@ -37,6 +38,12 @@ class UserInteractionServiceImpl(
     override suspend fun exportEvents(configId: ConfigId, events: Flow<Event>) {
         operations.forEach {
             it.postExport(configId, events)
+        }
+    }
+
+    override suspend fun postUnstableNetworkTimeout(duration: Duration) {
+        operations.forEach {
+            it.postUnstableNetworkTimeout(duration)
         }
     }
 

@@ -5,7 +5,7 @@ import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.Id
 import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
-import java.time.ZonedDateTime
+import java.time.Instant
 
 @Table(name = "tb_configs")
 class ConfigEntity(
@@ -32,7 +32,7 @@ class EventEntity(
     var id: Long = 0,
 ) {
     @CreatedDate
-    lateinit var created: ZonedDateTime
+    lateinit var created: Instant
 }
 
 @Table(name = "tb_telegram_chat_ids")

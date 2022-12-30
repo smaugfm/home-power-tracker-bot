@@ -5,12 +5,12 @@ import com.github.smaugfm.power.tracker.events.EventsService
 import com.github.smaugfm.power.tracker.interaction.UserInteractionService
 import com.github.smaugfm.power.tracker.monitoring.network.NetworkStabilityService
 import com.github.smaugfm.power.tracker.monitoring.network.PingService
-import com.github.smaugfm.power.tracker.spring.CoroutinesLaunchAdapter
+import com.github.smaugfm.power.tracker.spring.LaunchCoroutineBean
+import com.github.smaugfm.power.tracker.spring.MainLoopProperties
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
 import org.springframework.stereotype.Component
-import java.time.Duration
 import kotlin.time.toKotlinDuration
 
 @Component
@@ -20,12 +20,12 @@ class MainApplicationLoop(
     private val networkStability: NetworkStabilityService,
     private val events: EventsService,
     private val userInteraction: UserInteractionService,
-    @Value("\${app.loop.interval}")
-    private val interval: Duration,
-) : CoroutinesLaunchAdapter {
-    override suspend fun launch() {
+    private val props: MainLoopProperties,
+) : LaunchCoroutineBean {
+    override suspend fun launch(scope: CoroutineScope) {
         while (true) {
             networkStability.waitStable()
+
             configs.getAllMonitorable().collect { monitorable ->
 
                 val prevState = events.getCurrentState(monitorable.id)
@@ -37,7 +37,7 @@ class MainApplicationLoop(
                 }
             }
 
-            delay(interval.toKotlinDuration())
+            delay(props.interval.toKotlinDuration())
         }
     }
 
@@ -45,8 +45,8 @@ class MainApplicationLoop(
     fun deletionLoopJob(
         userInteraction: UserInteractionService,
         events: EventsService,
-    ): CoroutinesLaunchAdapter = object : CoroutinesLaunchAdapter {
-        override suspend fun launch() {
+    ): LaunchCoroutineBean = object : LaunchCoroutineBean {
+        override suspend fun launch(scope: CoroutineScope) {
             userInteraction.deletionFlow().collect { eventId ->
                 events.deleteAndGetLaterEvents(eventId).collect { updated ->
                     userInteraction.updateEvent(updated)
@@ -59,8 +59,8 @@ class MainApplicationLoop(
     fun exportLoopJob(
         userInteraction: UserInteractionService,
         events: EventsService
-    ): CoroutinesLaunchAdapter = object : CoroutinesLaunchAdapter {
-        override suspend fun launch() {
+    ): LaunchCoroutineBean = object : LaunchCoroutineBean {
+        override suspend fun launch(scope: CoroutineScope) {
             userInteraction.exportFlow().collect { configId ->
                 userInteraction.exportEvents(configId, events.getAllEvents(configId))
             }
