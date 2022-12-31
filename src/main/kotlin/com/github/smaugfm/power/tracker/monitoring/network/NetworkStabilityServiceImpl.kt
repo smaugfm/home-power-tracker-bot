@@ -15,7 +15,6 @@ import kotlinx.coroutines.withContext
 import mu.KotlinLogging
 import org.springframework.stereotype.Component
 import java.net.InetAddress
-import kotlin.system.exitProcess
 import kotlin.time.toKotlinDuration
 
 private val log = KotlinLogging.logger { }
@@ -98,12 +97,13 @@ class NetworkStabilityServiceImpl(
 
     private suspend fun isOnline() =
         withContext(Dispatchers.IO) {
-            props.hosts.map {
-                log.debug { "Trying to reach $it..." }
-                it to ping.isIcmpReachable(
-                    InetAddress.getByName(it),
+            props.hosts.map {host ->
+                host to (ping.isIcmpReachable(
+                    InetAddress.getByName(host),
                     props.timeout
-                )
+                ).also {
+                    log.debug { "Tried to reach $host: $it" }
+                })
             }
         }
 }

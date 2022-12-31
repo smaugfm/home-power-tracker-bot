@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.withTimeout
-import org.junit.jupiter.api.RepeatedTest
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.assertTimeout
 import org.springframework.beans.factory.annotation.Autowired
@@ -28,7 +28,7 @@ import java.util.concurrent.atomic.AtomicBoolean
         "app.network-stability.interval=100ms",
         "app.network-stability.timeout=200ms",
         "app.network-stability.wait-for-stable-network-timeout=600ms",
-        "app.network-stability.consecutive-tries-to-consider-online=2",
+        "app.network-stability.consecutive-tries-to-consider-online=3",
         "app.network-stability.hosts=1.1.1.1",
         "logging.level.com.github.smaugfm.power.tracker.monitoring.network.NetworkStabilityServiceImpl=DEBUG"
     ]
@@ -46,7 +46,7 @@ class NetworkStabilityServiceImplTest : TestBase() {
     @Autowired
     private lateinit var service: NetworkStabilityServiceImpl
 
-    @RepeatedTest(10)
+    @Test
     fun simpleTest() {
         val reachable = AtomicBoolean(true)
         every {
@@ -85,6 +85,8 @@ class NetworkStabilityServiceImplTest : TestBase() {
                     }
                 }
             }
+            println("wait normal")
+            delay(700)
             assertTimeout(Duration.ofMillis(100)) {
                 runBlocking {
                     service.waitStable()
