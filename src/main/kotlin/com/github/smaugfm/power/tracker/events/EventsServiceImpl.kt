@@ -8,14 +8,11 @@ import com.github.smaugfm.power.tracker.dto.PowerIspState
 import com.github.smaugfm.power.tracker.persistence.EventEntity
 import com.github.smaugfm.power.tracker.persistence.EventsRepository
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.ReactiveTransactionManager
-import org.springframework.transaction.TransactionDefinition
 import org.springframework.transaction.reactive.TransactionalOperator
-import org.springframework.transaction.support.DefaultTransactionDefinition
 import reactor.core.publisher.Flux
 
 @Service

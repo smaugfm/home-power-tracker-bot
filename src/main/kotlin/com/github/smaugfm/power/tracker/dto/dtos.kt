@@ -10,8 +10,8 @@ data class Event(
     val time: Instant
 )
 
-typealias EventId = Long;
-typealias ConfigId = Long;
+typealias EventId = Long
+typealias ConfigId = Long
 typealias MessageId = dev.inmo.tgbotapi.types.MessageId
 
 enum class EventType {

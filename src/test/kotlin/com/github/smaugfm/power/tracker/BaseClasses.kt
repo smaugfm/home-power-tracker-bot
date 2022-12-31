@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.test.context.ActiveProfiles
-import org.springframework.test.context.TestExecutionListeners
 
 @ActiveProfiles("test")
 @SpringBootTest(classes = [Application::class])

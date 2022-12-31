@@ -1,14 +1,14 @@
 package com.github.smaugfm.power.tracker.persistence
 
 import assertk.assertThat
-import assertk.assertions.*
+import assertk.assertions.isEqualTo
+import assertk.assertions.isEqualToWithGivenProperties
+import assertk.assertions.isGreaterThanOrEqualTo
 import com.github.smaugfm.power.tracker.RepositoryTestBase
 import com.github.smaugfm.power.tracker.dto.EventType
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.r2dbc.core.DatabaseClient
 import java.time.Instant
-import java.time.ZonedDateTime
 
 class RepositoriesTest : RepositoryTestBase() {
     @Autowired

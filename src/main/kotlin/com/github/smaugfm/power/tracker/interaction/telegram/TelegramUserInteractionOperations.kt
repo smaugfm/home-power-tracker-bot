@@ -14,7 +14,6 @@ import dev.inmo.tgbotapi.types.ChatId
 import dev.inmo.tgbotapi.types.message.MarkdownV2ParseMode
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactive.asFlow
-import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component

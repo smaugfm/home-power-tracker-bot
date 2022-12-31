@@ -6,8 +6,7 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.time.Instant
 
-interface ConfigsRepository : R2dbcRepository<ConfigEntity, Long> {
-}
+interface ConfigsRepository : R2dbcRepository<ConfigEntity, Long>
 
 interface EventsRepository : R2dbcRepository<EventEntity, Long> {
     fun findTop1ByConfigIdAndTypeOrderByCreatedDesc(
@@ -27,5 +26,4 @@ interface TelegramChatIdsRepository : R2dbcRepository<TelegramChatIdEntity, Long
     fun findAllByConfigId(configId: Long): Flux<TelegramChatIdEntity>
 }
 
-interface TelegramMessagesRepository : R2dbcRepository<TelegramMessageEntity, Long> {
-}
+interface TelegramMessagesRepository : R2dbcRepository<TelegramMessageEntity, Long>
