@@ -11,6 +11,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import org.springframework.context.annotation.Bean
 import org.springframework.stereotype.Component
+import java.time.Duration
 import kotlin.time.toKotlinDuration
 
 @Component
@@ -24,7 +25,8 @@ class MainApplicationLoop(
 ) : LaunchCoroutineBean {
     override suspend fun launch(scope: CoroutineScope) {
         while (true) {
-            networkStability.waitStable()
+            if (!networkStability.waitStable())
+                delay(Duration.ofMinutes(10).toKotlinDuration())
 
             configs.getAllMonitorable().collect { monitorable ->
 

@@ -3,7 +3,6 @@ package com.github.smaugfm.power.tracker.monitoring.network
 import com.github.smaugfm.power.tracker.interaction.UserInteractionService
 import com.github.smaugfm.power.tracker.spring.LaunchCoroutineBean
 import com.github.smaugfm.power.tracker.spring.NetworkStabilityProperties
-import com.github.smaugfm.power.tracker.util.Ping
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
@@ -13,7 +12,6 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.newSingleThreadContext
 import kotlinx.coroutines.time.withTimeout
 import kotlinx.coroutines.withContext
-import kotlinx.coroutines.withTimeout
 import mu.KotlinLogging
 import org.springframework.stereotype.Component
 import java.net.InetAddress
@@ -25,45 +23,40 @@ private val log = KotlinLogging.logger { }
 @Component
 @DelicateCoroutinesApi
 class NetworkStabilityServiceImpl(
+    protected val ping: Ping,
     private val props: NetworkStabilityProperties,
     private val userInteractionService: UserInteractionService,
 ) : LaunchCoroutineBean, NetworkStabilityService {
-    private var isStable = false
+    private var status = true
     private var successfulTriesAfterDrop = 0
-    private val context = newSingleThreadContext("network-monitor")
+    private var context = newSingleThreadContext("network-monitor")
 
     @Volatile
     private var networkStableDeferred: CompletableDeferred<Unit>? = null
 
-    override suspend fun waitStable() {
+    override suspend fun waitStable(): Boolean {
         val def = networkStableDeferred
         if (def != null)
-            try {
-                withTimeout(props.stableNetworkTimeout) {
+            return try {
+                withTimeout(props.waitForStableNetworkTimeout) {
                     networkStableDeferred?.await()
                 }
+                true
             } catch (e: TimeoutCancellationException) {
                 log.error("Timed out waiting on stable network. Notifying users...")
-                userInteractionService.postUnstableNetworkTimeout(props.stableNetworkTimeout)
-                log.error("Exiting application...")
-                exitProcess(1)
+                userInteractionService.postUnstableNetworkTimeout(props.waitForStableNetworkTimeout)
+                false
             }
+        return true
     }
 
     override suspend fun launch(scope: CoroutineScope) {
         withContext(context) {
             while (true) {
                 try {
-                    val results = withContext(Dispatchers.IO) {
-                        props.hosts.map {
-                            it to Ping.isIcmpReachable(
-                                InetAddress.getByName(it),
-                                props.timeout
-                            )
-                        }
-                    }
-                    val latestIsStable = results.all { it.second }
-                    if (!isStable) {
+                    val results = isOnline()
+                    val online = results.all { it.second }
+                    if (!online) {
                         if (successfulTriesAfterDrop > 1) {
                             log.info(
                                 "Network still has issues. " +
@@ -73,17 +66,17 @@ class NetworkStabilityServiceImpl(
                         successfulTriesAfterDrop = 0
                     }
 
-                    if (latestIsStable != isStable) {
-                        if (latestIsStable) {
+                    if (online != status) {
+                        if (online) {
                             if (++successfulTriesAfterDrop >= props.consecutiveTriesToConsiderOnline) {
-                                isStable = true
+                                status = true
                                 successfulTriesAfterDrop = 0
                                 log.info { "Network is STABLE again" }
                                 networkStableDeferred?.complete(Unit)
                                 networkStableDeferred = null
                             }
                         } else {
-                            isStable = false
+                            status = false
                             log.error {
                                 "Network ISSUES detected. Failed to reach: ${
                                     results.filter { !it.second }
@@ -95,11 +88,22 @@ class NetworkStabilityServiceImpl(
                     }
                 } catch (e: Throwable) {
                     log.error(e) { "An error occurred while monitoring network connectivity" }
-                    isStable = false
+                    status = false
                 }
 
                 delay(props.interval.toKotlinDuration())
             }
         }
     }
+
+    private suspend fun isOnline() =
+        withContext(Dispatchers.IO) {
+            props.hosts.map {
+                log.debug { "Trying to reach $it..." }
+                it to ping.isIcmpReachable(
+                    InetAddress.getByName(it),
+                    props.timeout
+                )
+            }
+        }
 }

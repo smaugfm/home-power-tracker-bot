@@ -13,7 +13,7 @@ data class MainLoopProperties(
 data class NetworkStabilityProperties(
     val interval: Duration,
     val timeout: Duration,
-    val stableNetworkTimeout: Duration,
+    val waitForStableNetworkTimeout: Duration,
     val consecutiveTriesToConsiderOnline: Int,
     val hosts: List<String>,
 )

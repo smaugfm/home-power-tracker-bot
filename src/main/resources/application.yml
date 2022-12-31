@@ -16,7 +16,7 @@ app:
   network-stability:
     interval: 600ms
     timeout: 1s
-    stable-network-timeout: 1h
+    wait-for-stable-network-timeout: 1h
     consecutive-tries-to-consider-online: 20
     hosts:
       - 188.190.254.254
