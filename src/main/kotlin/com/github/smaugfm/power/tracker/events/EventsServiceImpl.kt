@@ -11,7 +11,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactive.awaitFirstOrNull
-import kotlinx.coroutines.supervisorScope
 import org.springframework.stereotype.Service
 import org.springframework.transaction.ReactiveTransactionManager
 import org.springframework.transaction.TransactionDefinition
@@ -57,21 +56,20 @@ class EventsServiceImpl(
             .mapFluxDto()
     }
 
-    override suspend fun getCurrentState(configId: ConfigId) =
-        supervisorScope {
-            val power =
-                eventsRepository.findTop1ByConfigIdAndTypeOrderByCreatedDesc(
-                    configId,
-                    EventType.POWER
-                ).awaitFirstOrNull()?.state
-            val isp =
-                eventsRepository.findTop1ByConfigIdAndTypeOrderByCreatedDesc(
-                    configId,
-                    EventType.ISP
-                ).awaitFirstOrNull()?.state
+    override suspend fun getCurrentState(configId: ConfigId): PowerIspState {
+        val power =
+            eventsRepository.findTop1ByConfigIdAndTypeOrderByCreatedDesc(
+                configId,
+                EventType.POWER
+            ).awaitFirstOrNull()?.state
+        val isp =
+            eventsRepository.findTop1ByConfigIdAndTypeOrderByCreatedDesc(
+                configId,
+                EventType.ISP
+            ).awaitFirstOrNull()?.state
 
-            PowerIspState(power, isp)
-        }
+        return PowerIspState(power, isp)
+    }
 
     private fun calculateEvents(
         prevState: PowerIspState,

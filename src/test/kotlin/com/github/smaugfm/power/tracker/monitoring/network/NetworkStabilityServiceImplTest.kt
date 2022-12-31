@@ -58,9 +58,7 @@ class NetworkStabilityServiceImplTest : TestBase() {
 
         runBlocking {
             val job = GlobalScope.launch {
-                supervisorScope {
-                    service.launch(this)
-                }
+                service.launch(this)
             }
             assertTimeout(Duration.ofMillis(400)) {
                 runBlocking {

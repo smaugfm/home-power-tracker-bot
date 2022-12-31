@@ -31,7 +31,7 @@ class MainApplicationLoop(
             configs.getAllMonitorable().collect { monitorable ->
 
                 val prevState = events.getCurrentState(monitorable.id)
-                val currentState = ping.ping(monitorable)
+                val currentState = ping.ping(scope, monitorable)
 
                 if (prevState != currentState) {
                     events.calculateAddEvents(prevState, currentState, monitorable.id)

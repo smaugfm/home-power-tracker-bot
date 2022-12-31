@@ -8,6 +8,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.newSingleThreadContext
 import kotlinx.coroutines.time.withTimeout
@@ -53,7 +55,7 @@ class NetworkStabilityServiceImpl(
         withContext(context) {
             while (true) {
                 try {
-                    val results = isOnline()
+                    val results = isOnline(scope)
                     val online = results.all { it.second }
                     if (!online) {
                         if (successfulTriesAfterDrop > 1) {
@@ -95,9 +97,9 @@ class NetworkStabilityServiceImpl(
         }
     }
 
-    private suspend fun isOnline() =
-        withContext(Dispatchers.IO) {
-            props.hosts.map {host ->
+    private suspend fun isOnline(scope: CoroutineScope) =
+        props.hosts.map { host ->
+            scope.async(Dispatchers.IO) {
                 host to (ping.isIcmpReachable(
                     InetAddress.getByName(host),
                     props.timeout
@@ -105,5 +107,5 @@ class NetworkStabilityServiceImpl(
                     log.debug { "Tried to reach $host: $it" }
                 })
             }
-        }
+        }.awaitAll()
 }
