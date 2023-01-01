@@ -1,6 +1,6 @@
 package com.github.smaugfm.power.tracker.monitoring.network
 
-import com.github.smaugfm.power.tracker.TestBase
+import com.github.smaugfm.power.tracker.NoLiquibaseTestBase
 import com.github.smaugfm.power.tracker.interaction.UserInteractionService
 import com.ninjasquad.springmockk.MockkBean
 import io.mockk.coEvery
@@ -16,8 +16,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.assertTimeout
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration
-import org.springframework.boot.autoconfigure.liquibase.LiquibaseAutoConfiguration
 import org.springframework.test.context.TestPropertySource
 import java.time.Duration
 import java.util.concurrent.atomic.AtomicBoolean
@@ -33,8 +31,7 @@ import java.util.concurrent.atomic.AtomicBoolean
     ]
 )
 @DelicateCoroutinesApi
-@EnableAutoConfiguration(exclude = [LiquibaseAutoConfiguration::class])
-class NetworkStabilityServiceImplTest : TestBase() {
+class NetworkStabilityServiceImplTest : NoLiquibaseTestBase() {
 
     @MockkBean
     private lateinit var ping: Ping

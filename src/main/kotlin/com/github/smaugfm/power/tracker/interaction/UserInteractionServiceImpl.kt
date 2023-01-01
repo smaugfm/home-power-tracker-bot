@@ -20,18 +20,14 @@ class UserInteractionServiceImpl(
     override suspend fun postEvent(event: Event) {
         val stats = statsService.calculateEventStats(event)
         operations.forEach {
-            stats.collect { stat ->
-                it.postEvent(event, stat)
-            }
+            it.postEvent(event, stats)
         }
     }
 
     override suspend fun updateEvent(event: Event) {
         val stats = statsService.calculateEventStats(event)
         operations.forEach {
-            stats.collect { stat ->
-                it.updateEvent(event, stat)
-            }
+            it.updateEvent(event, stats)
         }
     }
 

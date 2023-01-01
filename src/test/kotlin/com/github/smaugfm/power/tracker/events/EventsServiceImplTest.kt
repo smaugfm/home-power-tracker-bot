@@ -8,7 +8,6 @@ import assertk.assertions.isGreaterThanOrEqualTo
 import com.github.smaugfm.power.tracker.RepositoryTestBase
 import com.github.smaugfm.power.tracker.dto.PowerIspState
 import com.github.smaugfm.power.tracker.persistence.ConfigEntity
-import com.github.smaugfm.power.tracker.persistence.ConfigsRepository
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
@@ -16,26 +15,14 @@ import org.springframework.beans.factory.annotation.Autowired
 import java.time.Instant
 
 class EventsServiceImplTest : RepositoryTestBase() {
-    @Autowired
-    private lateinit var configRepository: ConfigsRepository
 
     @Autowired
     private lateinit var service: EventsService
 
     @Test
     fun deleteAndGetLaterEventsTest() {
-        val configId = configRepository.save(
-            ConfigEntity(
-                "vasa.com",
-                8080,
-            )
-        ).block()!!.id
-        val configId2 = configRepository.save(
-            ConfigEntity(
-                "other.com",
-                8080,
-            )
-        ).block()!!.id
+        val configId = saveConfig1().id
+        val configId2 = saveConfig2().id
 
         db.sql(
             """
@@ -65,12 +52,7 @@ class EventsServiceImplTest : RepositoryTestBase() {
 
     @Test
     fun calculateLaterEventsTest() {
-        val configId = configRepository.save(
-            ConfigEntity(
-                "vasa.com",
-                8080,
-            )
-        ).block()!!.id
+        val configId = saveConfig1().id
 
         val prev = PowerIspState(null, null)
         val next = PowerIspState(true, true)
@@ -89,24 +71,14 @@ class EventsServiceImplTest : RepositoryTestBase() {
             isGreaterThanOrEqualTo(now)
             isGreaterThanOrEqualTo(events[0].time)
         }
-        val other = runBlocking { service.getAllEvents(configId).toList() }
+        val other = runBlocking { service.findAllEvents(configId).toList() }
         assertThat(other).isEqualTo(events)
     }
 
     @Test
     fun eventsFindCurrentState() {
-        val configId = configRepository.save(
-            ConfigEntity(
-                "vasa.com",
-                8080,
-            )
-        ).block()!!.id
-        val configId2 = configRepository.save(
-            ConfigEntity(
-                "other.com",
-                8080,
-            )
-        ).block()!!.id
+        val configId = saveConfig1().id
+        val configId2 = saveConfig2().id
 
         assertThat(
             runBlocking { service.getCurrentState(configId) }
@@ -133,4 +105,5 @@ class EventsServiceImplTest : RepositoryTestBase() {
         result = runBlocking { service.getCurrentState(configId2) }
         assertThat(result).isEqualTo(PowerIspState(true, null))
     }
+
 }

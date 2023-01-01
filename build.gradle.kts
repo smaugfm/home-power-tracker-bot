@@ -36,12 +36,14 @@ dependencies {
     implementation("io.projectreactor.kotlin:reactor-kotlin-extensions:1.2.1")
     implementation("io.github.microutils:kotlin-logging-jvm:3.0.4")
     implementation("dev.inmo:tgbotapi:4.2.2")
+    implementation("net.time4j:time4j-base:5.9.1")
+    implementation("net.time4j:time4j-tzdata:5.0-2022a")
+    implementation("com.h2database:h2")
+    implementation("io.r2dbc:r2dbc-h2")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     runtimeOnly("org.postgresql:postgresql")
     runtimeOnly("org.postgresql:r2dbc-postgresql")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
-    testImplementation("com.h2database:h2")
-    testImplementation("io.r2dbc:r2dbc-h2")
     testImplementation("org.springframework.boot:spring-boot-starter-test") {
         exclude(module = "mockito-core")
     }

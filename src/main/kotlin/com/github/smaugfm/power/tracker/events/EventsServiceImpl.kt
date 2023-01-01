@@ -21,10 +21,19 @@ class EventsServiceImpl(
     private val tm: ReactiveTransactionManager,
 ) : EventsService {
 
-    override suspend fun getAllEvents(configId: ConfigId): Flow<Event> {
+    override suspend fun findAllEvents(configId: ConfigId): Flow<Event> {
         return eventsRepository.findAllByConfigId(configId)
             .mapFluxDto()
     }
+
+    override suspend fun findPreviousLike(
+        event: Event,
+        state: Boolean?,
+        type: EventType?,
+    ): Event? =
+        eventsRepository.findFirstPreviousLike(event.configId, event.time, state, type)
+            .awaitFirstOrNull()
+            ?.let(this::mapDto)
 
     override suspend fun deleteAndGetLaterEvents(eventId: EventId): Flow<Event> =
         eventsRepository

@@ -64,7 +64,7 @@ class MainApplicationLoop(
     ): LaunchCoroutineBean = object : LaunchCoroutineBean {
         override suspend fun launch(scope: CoroutineScope) {
             userInteraction.exportFlow().collect { configId ->
-                userInteraction.exportEvents(configId, events.getAllEvents(configId))
+                userInteraction.exportEvents(configId, events.findAllEvents(configId))
             }
         }
     }

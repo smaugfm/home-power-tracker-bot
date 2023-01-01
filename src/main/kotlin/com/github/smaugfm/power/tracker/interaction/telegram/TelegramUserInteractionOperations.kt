@@ -12,7 +12,13 @@ import dev.inmo.tgbotapi.bot.TelegramBot
 import dev.inmo.tgbotapi.extensions.api.send.sendTextMessage
 import dev.inmo.tgbotapi.types.ChatId
 import dev.inmo.tgbotapi.types.message.MarkdownV2ParseMode
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flatMapMerge
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import org.springframework.context.annotation.Profile
@@ -21,29 +27,35 @@ import java.time.Duration
 
 @Profile("!test")
 @Component
+@FlowPreview
 class TelegramUserInteractionOperations(
     private val bot: TelegramBot,
     private val chatIdRepository: TelegramChatIdsRepository,
     private val messagesRepository: TelegramMessagesRepository,
-    private val formatter: TelegramMessageFormatter
+    private val formatter: TelegramMessageCreator
 ) : UserInteractionOperations {
-    override suspend fun postEvent(event: Event, stats: EventStats) {
-        val text = formatter.formatMessage(event, stats)
+    override suspend fun postEvent(event: Event, stats: List<EventStats>) {
+        val texts = formatter.getTelegramMessages(stats).asFlow()
 
-        chatIdRepository.findAllByConfigId(event.configId).asFlow().collect {
-            val msg = bot.sendTextMessage(ChatId(it.chatId), text, MarkdownV2ParseMode)
+        chatIdRepository
+            .findAllByConfigId(event.configId)
+            .asFlow()
+            .flatMapMerge {
+                texts.map { text ->
+                    val msg = bot.sendTextMessage(ChatId(it.chatId), text, MarkdownV2ParseMode)
 
-            messagesRepository.save(
-                TelegramMessageEntity(
-                    msg.messageId,
-                    it.chatId,
-                    it.configId
-                )
-            ).awaitSingleOrNull()
-        }
+                    messagesRepository.save(
+                        TelegramMessageEntity(
+                            msg.messageId,
+                            it.chatId,
+                            it.configId
+                        )
+                    ).awaitSingleOrNull()
+                }
+            }.collect()
     }
 
-    override suspend fun updateEvent(event: Event, stat: EventStats) {
+    override suspend fun updateEvent(event: Event, stats: List<EventStats>) {
         TODO("Not yet implemented")
     }
 
@@ -52,14 +64,22 @@ class TelegramUserInteractionOperations(
     }
 
     override suspend fun postUnstableNetworkTimeout(duration: Duration) {
-        TODO("Not yet implemented")
+        val text = formatter.unstableNetworkMessage(duration)
+        chatIdRepository
+            .findAll()
+            .asFlow()
+            .map {
+                bot.sendTextMessage(ChatId(it.chatId), text)
+            }
     }
 
     override fun deletionFlow(): Flow<EventId> {
-        TODO("Not yet implemented")
+        //TODO
+        return emptyFlow()
     }
 
     override fun exportFlow(): Flow<ConfigId> {
-        TODO("Not yet implemented")
+        //TODO
+        return emptyFlow()
     }
 }
