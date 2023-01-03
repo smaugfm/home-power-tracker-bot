@@ -9,3 +9,21 @@ spring:
     password: test
     driver-class-name: org.h2.Driver
     default-schema: public
+
+app:
+  loop:
+    interval: 300ms
+    reachable-timeout: 300ms
+  network-stability:
+    interval: 300ms
+    timeout: 500ms
+    wait-for-stable-network-timeout: 1s
+    consecutive-tries-to-consider-online: 3
+    hosts:
+      - 1.1.1.1
+
+logging:
+  level:
+    com.github.smaugfm.power.tracker: DEBUG
+    liquibase: INFO
+    io.r2dbc.h2: INFO

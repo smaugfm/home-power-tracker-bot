@@ -23,7 +23,6 @@ import kotlin.time.toKotlinDuration
 private val log = KotlinLogging.logger { }
 
 @Component
-@Profile("!test")
 @DelicateCoroutinesApi
 class NetworkStabilityServiceImpl(
     protected val ping: Ping,

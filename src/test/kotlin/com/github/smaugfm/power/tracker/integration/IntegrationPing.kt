@@ -1,6 +1,9 @@
 package com.github.smaugfm.power.tracker.integration
 
 import com.github.smaugfm.power.tracker.monitoring.network.Ping
+import org.springframework.context.annotation.Primary
+import org.springframework.context.annotation.Profile
+import org.springframework.stereotype.Component
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.time.Duration

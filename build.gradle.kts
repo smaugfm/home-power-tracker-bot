@@ -3,10 +3,8 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     id("org.springframework.boot") version "3.0.1"
     id("io.spring.dependency-management") version "1.1.0"
-    id("org.graalvm.buildtools.native") version "0.9.18"
     kotlin("jvm") version "1.7.22"
     kotlin("plugin.spring") version "1.7.22"
-    kotlin("plugin.jpa") version "1.7.22"
     idea
 }
 
@@ -62,6 +60,7 @@ tasks.withType<KotlinCompile> {
 tasks.withType<Test> {
     useJUnitPlatform()
     jvmArgs(
+        // https://github.com/Ninja-Squad/springmockk#gotchas
         "--add-opens", "java.base/java.lang.reflect=ALL-UNNAMED"
     )
 }

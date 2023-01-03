@@ -43,7 +43,7 @@ class NetworkStabilityServiceImplTest : NoLiquibaseTestBase() {
     private lateinit var service: NetworkStabilityServiceImpl
 
     @Test
-    fun simpleTest() {
+    fun networkStableUnstableTest() {
         val reachable = AtomicBoolean(true)
         every {
             ping.isIcmpReachable(any(), any())

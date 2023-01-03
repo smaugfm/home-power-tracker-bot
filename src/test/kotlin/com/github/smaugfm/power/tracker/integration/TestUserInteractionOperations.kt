@@ -8,7 +8,6 @@ import com.github.smaugfm.power.tracker.stats.EventStats
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
 import mu.KotlinLogging
-import org.springframework.stereotype.Component
 import java.time.Duration
 
 val log = KotlinLogging.logger { }

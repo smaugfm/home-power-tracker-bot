@@ -4,10 +4,6 @@ import com.github.smaugfm.power.tracker.dto.Event
 import com.github.smaugfm.power.tracker.dto.EventType
 import com.github.smaugfm.power.tracker.events.EventsService
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.emptyFlow
-import kotlinx.coroutines.flow.flattenConcat
 import org.springframework.stereotype.Service
 
 @Service
@@ -25,10 +21,9 @@ class StatsServiceImpl(
             EventType.ISP -> if (event.state) getLastInverseStats(event) else getIspDownStats(
                 event
             )
-        }
-        if (singleEventStats != null)
-            listOf(singleEventStats)
-        return emptyList()
+        } ?: return emptyList()
+
+        return listOf(singleEventStats)
     }
 
     private suspend fun getIspDownStats(event: Event): EventStats.Single? {

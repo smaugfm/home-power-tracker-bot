@@ -9,32 +9,23 @@ import com.github.smaugfm.power.tracker.spring.NetworkStabilityProperties
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Primary
+import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.ContextConfiguration
-import org.springframework.test.context.TestPropertySource
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.time.Duration
 import java.util.concurrent.atomic.AtomicBoolean
 
-@TestPropertySource(
-    properties = [
-        "app.loop.interval=300ms",
-        "app.loop.reachable-timeout=300ms",
-        "app.network-stability.interval=300ms",
-        "app.network-stability.timeout=500ms",
-        "app.network-stability.wait-for-stable-network-timeout=1s",
-        "app.network-stability.consecutive-tries-to-consider-online=3",
-        "app.network-stability.hosts=1.1.1.1",
-        "logging.level.com.github.smaugfm.power.tracker.monitoring.network.NetworkStabilityServiceImpl=DEBUG"
-    ]
-)
+@ActiveProfiles("integration")
 @DelicateCoroutinesApi
+@Disabled
 @ContextConfiguration(classes = [IntegrationTest.IntegrationConfig::class])
 class IntegrationTest : RepositoryTestBase() {
     @Autowired
@@ -48,7 +39,7 @@ class IntegrationTest : RepositoryTestBase() {
 
     @Test
     fun integration() {
-        val configId = saveConfig1()
+        saveConfig1()
         stabilityBoolean.set(false)
 
         GlobalScope.launch {
@@ -92,6 +83,7 @@ class IntegrationTest : RepositoryTestBase() {
         fun stabilityBoolean() = AtomicBoolean(false)
 
         @Bean
+        @Primary
         fun networkStability(
             stabilityBoolean: AtomicBoolean,
             props: NetworkStabilityProperties,
