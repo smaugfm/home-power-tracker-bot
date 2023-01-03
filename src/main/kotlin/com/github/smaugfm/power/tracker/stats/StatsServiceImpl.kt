@@ -57,7 +57,10 @@ class StatsServiceImpl(
         return EventStats.Single.LastInverseOnly(event.state, event.type, event.since(prev))
     }
 
-    private fun summaryEventStats(event: Event): List<EventStats.Summary> {
+    private fun summaryEventStats(
+        @Suppress("UNUSED_PARAMETER")
+        event: Event
+    ): List<EventStats.Summary> {
         //TODO
         return emptyList()
     }
