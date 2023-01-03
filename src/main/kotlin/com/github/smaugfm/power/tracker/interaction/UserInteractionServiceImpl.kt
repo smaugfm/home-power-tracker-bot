@@ -8,8 +8,11 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.flatMapMerge
+import mu.KotlinLogging
 import org.springframework.stereotype.Service
 import java.time.Duration
+
+private val log = KotlinLogging.logger { }
 
 @Service
 @FlowPreview
@@ -19,6 +22,8 @@ class UserInteractionServiceImpl(
 ) : UserInteractionService {
     override suspend fun postEvent(event: Event) {
         val stats = statsService.calculateEventStats(event)
+
+        log.debug { "Posting event: $event with stats $stats" }
         operations.forEach {
             it.postEvent(event, stats)
         }

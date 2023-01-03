@@ -15,6 +15,7 @@ import kotlinx.coroutines.newSingleThreadContext
 import kotlinx.coroutines.time.withTimeout
 import kotlinx.coroutines.withContext
 import mu.KotlinLogging
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 import java.net.InetAddress
 import kotlin.time.toKotlinDuration
@@ -22,24 +23,26 @@ import kotlin.time.toKotlinDuration
 private val log = KotlinLogging.logger { }
 
 @Component
+@Profile("!test")
 @DelicateCoroutinesApi
 class NetworkStabilityServiceImpl(
     protected val ping: Ping,
     private val props: NetworkStabilityProperties,
     private val userInteractionService: UserInteractionService,
 ) : LaunchCoroutineBean, NetworkStabilityService {
-    private var status = true
+    private var status = false
     private var successfulTriesAfterDrop = 0
     private var context = newSingleThreadContext("network-monitor")
 
     @Volatile
-    private var networkStableDeferred: CompletableDeferred<Unit>? = null
+    private var networkStableDeferred: CompletableDeferred<Unit>? = CompletableDeferred()
 
     override suspend fun waitStable(): Boolean {
         val def = networkStableDeferred
         if (def != null)
             return try {
                 withTimeout(props.waitForStableNetworkTimeout) {
+                    log.debug { "Waiting for stable network..." }
                     networkStableDeferred?.await()
                 }
                 true

@@ -9,6 +9,7 @@ import kotlinx.coroutines.supervisorScope
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.runApplication
+import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.data.r2dbc.config.EnableR2dbcAuditing
 import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories
 
@@ -16,14 +17,19 @@ import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories
 @EnableR2dbcRepositories
 @EnableR2dbcAuditing
 @EnableConfigurationProperties(value = [MainLoopProperties::class, NetworkStabilityProperties::class])
-class Application
+class Application {
+    companion object {
+        suspend fun run(context: ConfigurableApplicationContext) {
+            supervisorScope {
+                context.getBeansOfType(LaunchCoroutineBean::class.java)
+                    .values.map {
+                        launch { it.launch(this) }
+                    }.joinAll()
+            }
+        }
+    }
+}
 
 suspend fun main(args: Array<String>) {
-    val context = runApplication<Application>(*args)
-    supervisorScope {
-        context.getBeansOfType(LaunchCoroutineBean::class.java)
-            .values.map {
-                launch { it.launch(this) }
-            }.joinAll()
-    }
+    Application.run(runApplication<Application>(*args))
 }

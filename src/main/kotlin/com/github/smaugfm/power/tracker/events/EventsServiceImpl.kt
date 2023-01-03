@@ -10,10 +10,13 @@ import com.github.smaugfm.power.tracker.persistence.EventsRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactive.awaitFirstOrNull
+import mu.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.ReactiveTransactionManager
 import org.springframework.transaction.reactive.TransactionalOperator
 import reactor.core.publisher.Flux
+
+private val log = KotlinLogging.logger { }
 
 @Service
 class EventsServiceImpl(
@@ -57,6 +60,7 @@ class EventsServiceImpl(
         configId: ConfigId,
     ): Flow<Event> {
         val events = calculateEvents(prevState, currentState, configId)
+        log.debug { "Adding new events: $events" }
         return eventsRepository
             .saveAll(events.map { EventEntity(it.state, it.type, it.configId) })
             .mapFluxDto()
@@ -74,7 +78,9 @@ class EventsServiceImpl(
                 EventType.ISP
             ).awaitFirstOrNull()?.state
 
-        return PowerIspState(power, isp)
+        return PowerIspState(power, isp).also {
+            log.debug { "configId=$configId current state: $it" }
+        }
     }
 
     private fun calculateEvents(
@@ -90,7 +96,7 @@ class EventsServiceImpl(
             ) else null,
             if (prevState.hasIsp != currentState.hasIsp) NewEvent(
                 currentState.hasIsp!!,
-                EventType.POWER,
+                EventType.ISP,
                 configId
             ) else null
         )

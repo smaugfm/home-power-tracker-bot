@@ -12,5 +12,6 @@ spring:
 
 logging:
   level:
+    com.github.smaugfm.power.tracker: DEBUG
     liquibase: INFO
-    io.r2dbc.h2: DEBUG
+    io.r2dbc.h2: INFO

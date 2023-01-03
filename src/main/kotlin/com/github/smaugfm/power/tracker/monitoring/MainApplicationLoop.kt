@@ -9,10 +9,12 @@ import com.github.smaugfm.power.tracker.spring.LaunchCoroutineBean
 import com.github.smaugfm.power.tracker.spring.MainLoopProperties
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
+import mu.KotlinLogging
 import org.springframework.context.annotation.Bean
 import org.springframework.stereotype.Component
-import java.time.Duration
 import kotlin.time.toKotlinDuration
+
+private val log = KotlinLogging.logger { }
 
 @Component
 class MainApplicationLoop(
@@ -25,18 +27,22 @@ class MainApplicationLoop(
 ) : LaunchCoroutineBean {
     override suspend fun launch(scope: CoroutineScope) {
         while (true) {
-            if (!networkStability.waitStable())
-                delay(Duration.ofMinutes(10).toKotlinDuration())
+            try {
+                if (!networkStability.waitStable())
+                    continue
 
-            configs.getAllMonitorable().collect { monitorable ->
+                configs.getAllMonitorable().collect { monitorable ->
 
-                val prevState = events.getCurrentState(monitorable.id)
-                val currentState = ping.ping(scope, monitorable)
+                    val prevState = events.getCurrentState(monitorable.id)
+                    val currentState = ping.ping(scope, monitorable)
 
-                if (prevState != currentState) {
-                    events.calculateAddEvents(prevState, currentState, monitorable.id)
-                        .collect { userInteraction.postEvent(it) }
+                    if (prevState != currentState) {
+                        events.calculateAddEvents(prevState, currentState, monitorable.id)
+                            .collect { userInteraction.postEvent(it) }
+                    }
                 }
+            } catch (e: Throwable) {
+                log.error(e) { "Error in main loop." }
             }
 
             delay(props.interval.toKotlinDuration())

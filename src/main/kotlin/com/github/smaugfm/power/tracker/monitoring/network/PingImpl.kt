@@ -34,13 +34,13 @@ class PingImpl : Ping {
             socket.connect(address, timeoutMs)
             true
         } catch (e: SocketTimeoutException) {
-            log.warn { "TCP ping to $address: timed out." }
+            log.debug { "TCP ping to $address: timed out." }
             false
         } catch (e: ConnectException) {
-            log.warn { "TCP ping to $address: connection refused" }
+            log.debug { "TCP ping to $address: connection refused" }
             false
         } catch (e: Throwable) {
-            log.warn { "TCP ping to $address: unknown error" }
+            log.debug { "TCP ping to $address: unknown error" }
             false
         }
     }

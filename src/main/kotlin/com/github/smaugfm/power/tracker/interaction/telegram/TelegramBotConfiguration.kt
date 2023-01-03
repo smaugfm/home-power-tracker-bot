@@ -29,8 +29,8 @@ class TelegramBotConfiguration {
     fun startBotJob(
         context: ApplicationContext,
         bot: TelegramBot,
-    ): LaunchCoroutineBean {
-        return object : LaunchCoroutineBean {
+    ): LaunchCoroutineBean =
+        object : LaunchCoroutineBean {
             override suspend fun launch(scope: CoroutineScope) {
                 val job = bot.buildBehaviourWithLongPolling(scope = scope) {
                     onText {
@@ -42,5 +42,4 @@ class TelegramBotConfiguration {
                 job.join()
             }
         }
-    }
 }
