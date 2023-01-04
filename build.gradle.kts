@@ -48,6 +48,7 @@ dependencies {
     testImplementation("com.willowtreeapps.assertk:assertk-jvm:0.25")
     testImplementation("io.projectreactor:reactor-test")
     testImplementation("com.ninja-squad:springmockk:4.0.0")
+    testImplementation("com.beust:klaxon:5.5")
 }
 
 tasks.withType<KotlinCompile> {

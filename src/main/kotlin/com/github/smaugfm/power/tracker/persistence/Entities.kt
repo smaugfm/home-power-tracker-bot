@@ -3,6 +3,8 @@ package com.github.smaugfm.power.tracker.persistence
 import com.github.smaugfm.power.tracker.dto.EventType
 import org.springframework.data.annotation.CreatedDate
 import org.springframework.data.annotation.Id
+import org.springframework.data.annotation.Transient
+import org.springframework.data.domain.Persistable
 import org.springframework.data.relational.core.mapping.Column
 import org.springframework.data.relational.core.mapping.Table
 import java.time.Instant
@@ -37,12 +39,22 @@ class EventEntity(
 
 @Table(name = "tb_telegram_chat_ids")
 class TelegramChatIdEntity(
-    @Column("config_id")
-    val configId: Long,
     @Id
     @Column("chat_id")
-    var chatId: Long,
-)
+    val chatId: Long,
+    @Column("config_id")
+    val configId: Long,
+) : Persistable<Long> {
+    @Transient
+    private var isNewField = false
+
+    fun markNew() = this.also {
+        it.isNewField = true
+    }
+
+    override fun getId() = chatId
+    override fun isNew() = isNewField
+}
 
 @Table(name = "tb_telegram_messages")
 class TelegramMessageEntity(

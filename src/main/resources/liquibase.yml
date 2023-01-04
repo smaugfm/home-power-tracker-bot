@@ -131,3 +131,15 @@ databaseChangeLog:
                     nullable: false
                     foreignKeyName: fkey_tb_telegram_messages_tb_telegram_chat_ids
                     reference: tb_telegram_chat_ids(chat_id)
+  - changeSet:
+      id: 03
+      author: smaugfm
+      changes:
+        - createIndex:
+            clustered: true
+            indexName: idx_tb_events_created
+            tableName: tb_events
+            columns:
+              - column:
+                  descending: true
+                  name: created
