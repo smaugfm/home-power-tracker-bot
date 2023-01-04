@@ -23,7 +23,7 @@ class UserInteractionServiceImpl(
     override suspend fun postEvent(event: Event) {
         val stats = statsService.calculateEventStats(event)
 
-        log.debug { "Posting event: $event with stats $stats" }
+        log.info { "Notifying of an event: $event with stats $stats" }
         operations.forEach {
             it.postEvent(event, stats)
         }
@@ -43,6 +43,7 @@ class UserInteractionServiceImpl(
     }
 
     override suspend fun postUnstableNetworkTimeout(duration: Duration) {
+        log.info { "Notifying of an unstable network $duration" }
         operations.forEach {
             it.postUnstableNetworkTimeout(duration)
         }

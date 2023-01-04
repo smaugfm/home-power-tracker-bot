@@ -15,15 +15,18 @@ import dev.inmo.tgbotapi.types.message.MarkdownV2ParseMode
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactor.awaitSingleOrNull
+import mu.KotlinLogging
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 import java.time.Duration
+
+private val log = KotlinLogging.logger { }
 
 @Profile("!test")
 @Component
@@ -42,17 +45,26 @@ class TelegramUserInteractionOperations(
             .asFlow()
             .flatMapMerge {
                 texts.map { text ->
-                    val msg = bot.sendTextMessage(ChatId(it.chatId), text, MarkdownV2ParseMode)
-
-                    messagesRepository.save(
-                        TelegramMessageEntity(
-                            msg.messageId,
-                            it.chatId,
-                            it.configId
-                        )
-                    ).awaitSingleOrNull()
+                    try {
+                        val msg = bot.sendTextMessage(ChatId(it.chatId), text, MarkdownV2ParseMode)
+                        messagesRepository.save(
+                            TelegramMessageEntity(
+                                msg.messageId,
+                                it.chatId,
+                                event.id
+                            )
+                        ).awaitSingleOrNull()
+                    } catch (e: Throwable) {
+                        log.error(e) { "Error posting event to Telegram chatId=${it.chatId}" }
+                        null
+                    }
                 }
-            }.collect()
+            }.toList()
+            .also {
+                log.info {
+                    "Posted Telegram messages: $it"
+                }
+            }
     }
 
     override suspend fun updateEvent(event: Event, stats: List<EventStats>) {
@@ -70,6 +82,12 @@ class TelegramUserInteractionOperations(
             .asFlow()
             .map {
                 bot.sendTextMessage(ChatId(it.chatId), text)
+            }.toList()
+            .also {
+                log.info {
+                    "Posted unstable network Telegram messages: " +
+                            "${it.map { "<messageId=${it.messageId}, chatId=${it.chat.id.chatId}>" }}"
+                }
             }
     }
 

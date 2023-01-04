@@ -15,7 +15,6 @@ import kotlinx.coroutines.newSingleThreadContext
 import kotlinx.coroutines.time.withTimeout
 import kotlinx.coroutines.withContext
 import mu.KotlinLogging
-import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 import java.net.InetAddress
 import kotlin.time.toKotlinDuration
@@ -38,8 +37,8 @@ class NetworkStabilityServiceImpl(
 
     override suspend fun waitStable(): Boolean {
         val def = networkStableDeferred
-        if (def != null)
-            return try {
+        return if (def != null)
+            try {
                 withTimeout(props.waitForStableNetworkTimeout) {
                     log.debug { "Waiting for stable network..." }
                     networkStableDeferred?.await()
@@ -50,7 +49,8 @@ class NetworkStabilityServiceImpl(
                 userInteractionService.postUnstableNetworkTimeout(props.waitForStableNetworkTimeout)
                 false
             }
-        return true
+        else
+            true
     }
 
     override suspend fun launch(scope: CoroutineScope) {
@@ -106,7 +106,8 @@ class NetworkStabilityServiceImpl(
                     InetAddress.getByName(host),
                     props.timeout
                 ).also {
-                    log.debug { "Tried to reach $host: $it" }
+                    if (!it)
+                        log.debug { "Failed to reach $host" }
                 })
             }
         }.awaitAll()

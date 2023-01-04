@@ -60,7 +60,7 @@ class EventsServiceImpl(
         configId: ConfigId,
     ): Flow<Event> {
         val events = calculateEvents(prevState, currentState, configId)
-        log.debug { "Adding new events: $events" }
+        log.info { "Adding new events: $events" }
         return eventsRepository
             .saveAll(events.map { EventEntity(it.state, it.type, it.configId) })
             .mapFluxDto()
@@ -78,9 +78,7 @@ class EventsServiceImpl(
                 EventType.ISP
             ).awaitFirstOrNull()?.state
 
-        return PowerIspState(power, isp).also {
-            log.debug { "configId=$configId current state: $it" }
-        }
+        return PowerIspState(power, isp)
     }
 
     private fun calculateEvents(

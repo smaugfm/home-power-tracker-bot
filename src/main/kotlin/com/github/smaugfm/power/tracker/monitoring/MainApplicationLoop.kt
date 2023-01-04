@@ -26,6 +26,7 @@ class MainApplicationLoop(
     private val props: MainLoopProperties,
 ) : LaunchCoroutineBean {
     override suspend fun launch(scope: CoroutineScope) {
+        val stateLogged = mutableMapOf<String, Boolean>()
         while (true) {
             try {
                 if (!networkStability.waitStable())
@@ -35,8 +36,19 @@ class MainApplicationLoop(
 
                     val prevState = events.getCurrentState(monitorable.id)
                     val currentState = ping.ping(scope, monitorable)
+                    if (stateLogged[monitorable.address] != true) {
+                        log.info {
+                            "configId=${monitorable.id} stored state: $prevState, " +
+                                    "currently pinged state: $currentState"
+                        }
+                        stateLogged[monitorable.address] = true
+                    }
 
                     if (prevState != currentState) {
+                        log.info {
+                            "State diff for host=${monitorable.address}. " +
+                                    "prev: $prevState, cur: $currentState"
+                        }
                         events.calculateAddEvents(prevState, currentState, monitorable.id)
                             .collect { userInteraction.postEvent(it) }
                     }

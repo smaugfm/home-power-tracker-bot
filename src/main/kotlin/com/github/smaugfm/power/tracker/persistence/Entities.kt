@@ -10,7 +10,7 @@ import org.springframework.data.relational.core.mapping.Table
 import java.time.Instant
 
 @Table(name = "tb_configs")
-class ConfigEntity(
+data class ConfigEntity(
     @Column
     val address: String,
     val port: Int?,
@@ -23,7 +23,7 @@ class ConfigEntity(
 )
 
 @Table(name = "tb_events")
-class EventEntity(
+data class EventEntity(
     @Column
     val state: Boolean,
     @Column
@@ -38,7 +38,7 @@ class EventEntity(
 }
 
 @Table(name = "tb_telegram_chat_ids")
-class TelegramChatIdEntity(
+data class TelegramChatIdEntity(
     @Id
     @Column("chat_id")
     val chatId: Long,
@@ -57,7 +57,7 @@ class TelegramChatIdEntity(
 }
 
 @Table(name = "tb_telegram_messages")
-class TelegramMessageEntity(
+data class TelegramMessageEntity(
     @Column("message_id")
     val messageId: Long,
     @Column("chat_id")

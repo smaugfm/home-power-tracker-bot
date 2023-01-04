@@ -20,9 +20,7 @@ class PingServiceImpl(
     private val props: MainLoopProperties,
 ) : PingService {
     override suspend fun ping(scope: CoroutineScope, config: Monitorable) =
-        getState(scope, config).also {
-            log.debug { "configId=${config.id} pinged state: $it" }
-        }
+        getState(scope, config)
 
     private suspend fun getState(scope: CoroutineScope, config: Monitorable) =
         if (config.port != null) {
