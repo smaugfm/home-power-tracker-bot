@@ -13,9 +13,11 @@ app:
   loop:
     interval: 10s
     reachable-timeout: 10s
+    tries: 3
   network-stability:
-    interval: 600ms
+    interval: 2s
     timeout: 1s
+    tries: 3
     wait-for-stable-network-timeout: 10m
     consecutive-tries-to-consider-online: 20
     hosts:

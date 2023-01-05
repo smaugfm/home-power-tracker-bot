@@ -26,6 +26,7 @@ import java.util.concurrent.atomic.AtomicBoolean
         "app.network-stability.timeout=200ms",
         "app.network-stability.wait-for-stable-network-timeout=600ms",
         "app.network-stability.consecutive-tries-to-consider-online=3",
+        "app.network-stability.tries=2",
         "app.network-stability.hosts=1.1.1.1",
         "logging.level.com.github.smaugfm.power.tracker.monitoring.network.NetworkStabilityServiceImpl=DEBUG"
     ]
@@ -46,7 +47,7 @@ class NetworkStabilityServiceImplTest : NoLiquibaseTestBase() {
     fun networkStableUnstableTest() {
         val reachable = AtomicBoolean(true)
         every {
-            ping.isIcmpReachable(any(), any())
+            ping.isIcmpReachable(any(), any(), any())
         } answers { reachable.get() }
         coEvery {
             interaction.postUnstableNetworkTimeout(any())

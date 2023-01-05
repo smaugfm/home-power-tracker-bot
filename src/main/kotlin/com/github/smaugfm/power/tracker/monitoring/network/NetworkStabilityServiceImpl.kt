@@ -40,7 +40,7 @@ class NetworkStabilityServiceImpl(
         return if (def != null)
             try {
                 withTimeout(props.waitForStableNetworkTimeout) {
-                    log.debug { "Waiting for stable network..." }
+                    log.info { "Waiting for stable network..." }
                     networkStableDeferred?.await()
                 }
                 true
@@ -80,7 +80,7 @@ class NetworkStabilityServiceImpl(
                             }
                         } else {
                             status = false
-                            log.error {
+                            log.warn {
                                 "Network ISSUES detected. Failed to reach: ${
                                     results.filter { !it.second }
                                         .joinToString(", ") { it.first }
@@ -104,7 +104,8 @@ class NetworkStabilityServiceImpl(
             scope.async(Dispatchers.IO) {
                 host to (ping.isIcmpReachable(
                     InetAddress.getByName(host),
-                    props.timeout
+                    props.timeout,
+                    props.tries
                 ).also {
                     if (!it)
                         log.debug { "Failed to reach $host" }

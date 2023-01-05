@@ -90,12 +90,13 @@ class IntegrationTest : RepositoryTestBase() {
             userInteractionService: UserInteractionService,
         ) =
             NetworkStabilityServiceImpl(object : Ping {
-                override fun isIcmpReachable(address: InetAddress, timeout: Duration) =
+                override fun isIcmpReachable(address: InetAddress, timeout: Duration, tries: Int) =
                     stabilityBoolean.get()
 
                 override fun isTcpReachable(
                     address: InetSocketAddress,
-                    timeout: Duration
+                    timeout: Duration,
+                    tries: Int
                 ): Boolean {
                     throw IllegalStateException("Should not be called")
                 }

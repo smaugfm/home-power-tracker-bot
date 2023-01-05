@@ -13,7 +13,7 @@ class IntegrationPing : Ping {
     val icmp = AtomicBoolean(false)
     val tcp = AtomicBoolean(false)
 
-    override fun isIcmpReachable(address: InetAddress, timeout: Duration) = icmp.get()
+    override fun isIcmpReachable(address: InetAddress, timeout: Duration, tries: Int) = icmp.get()
 
-    override fun isTcpReachable(address: InetSocketAddress, timeout: Duration) = tcp.get()
+    override fun isTcpReachable(address: InetSocketAddress, timeout: Duration, tries: Int) = tcp.get()
 }

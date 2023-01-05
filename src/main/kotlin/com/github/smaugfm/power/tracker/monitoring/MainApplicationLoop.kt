@@ -38,7 +38,7 @@ class MainApplicationLoop(
                     val currentState = ping.ping(scope, monitorable)
                     if (stateLogged[monitorable.address] != true) {
                         log.info {
-                            "configId=${monitorable.id} stored state: $prevState, " +
+                            "host=${monitorable.address} stored state: $prevState, " +
                                     "currently pinged state: $currentState"
                         }
                         stateLogged[monitorable.address] = true

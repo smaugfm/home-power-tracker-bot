@@ -1,11 +1,9 @@
 spring:
   r2dbc:
-    url: r2dbc:h2:file:///./testdb
-    username: test
-    password: test
+    url: r2dbc:postgresql://localhost:5432/postgres
+    username: postgres
   liquibase:
-    url: jdbc:h2:file:./testdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;CASE_INSENSITIVE_IDENTIFIERS=TRUE;AUTO_SERVER=true;AUTO_SERVER_PORT=9090
-    user: test
-    password: test
-    driver-class-name: org.h2.Driver
+    url: jdbc:postgresql://localhost:5432/postgres
+    user: postgres
+    driver-class-name: org.postgresql.Driver
     default-schema: public

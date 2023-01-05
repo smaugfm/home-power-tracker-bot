@@ -12,24 +12,33 @@ private val log = KotlinLogging.logger { }
 
 @Component
 class PingImpl : Ping {
-    override fun isIcmpReachable(address: InetAddress, timeout: Duration): Boolean =
+    override fun isIcmpReachable(address: InetAddress, eachTimeout: Duration, tries: Int): Boolean =
         Runtime.getRuntime()
-            .exec("ping -c 1 -W ${timeout.toSeconds()} ${address.hostAddress}")
+            .exec("fping -c $tries -p ${eachTimeout.toMillis()} ${address.hostAddress}")
             .waitFor()
             .isZero()
 
     override fun isTcpReachable(
         address: InetSocketAddress,
-        timeout: Duration
+        eachTimeout: Duration,
+        tries: Int
     ): Boolean {
         val socket = Socket()
-        val timeoutMs = timeout.toMillis().toInt()
+        val timeoutMs = eachTimeout.toMillis().toInt()
         socket.soTimeout = timeoutMs
-        return try {
-            socket.connect(address, timeoutMs)
-            true
-        } catch (e: Throwable) {
-            false
+        val connect = {
+            try {
+                socket.connect(address, timeoutMs)
+                true
+            } catch (e: Throwable) {
+                false
+            }
         }
+        var attempt = 0
+        do {
+            if (connect())
+                return true
+        } while (attempt++ < tries)
+        return false
     }
 }

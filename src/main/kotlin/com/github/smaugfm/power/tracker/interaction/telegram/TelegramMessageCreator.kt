@@ -14,7 +14,7 @@ class TelegramMessageCreator {
         stats.map(::createText)
 
     fun unstableNetworkMessage(duration: Duration) =
-        "Мережа на сервері бота нестабільна.\nЧас поганої роботи мережі: ${humanReadable(duration)}"
+        "Мережа на сервері бота нестабільна останні ${humanReadable(duration)}"
 
     private fun createText(stats: EventStats): String =
         when (stats) {

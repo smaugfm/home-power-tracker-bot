@@ -28,13 +28,15 @@ class PingServiceImpl(
                 scope.async(Dispatchers.IO) {
                     ping.isTcpReachable(
                         InetSocketAddress(config.address, config.port.toInt()),
-                        props.reachableTimeout
+                        props.reachableTimeout,
+                        props.tries,
                     )
                 },
                 scope.async(Dispatchers.IO) {
                     ping.isIcmpReachable(
                         InetAddress.getByName(config.address),
-                        props.reachableTimeout
+                        props.reachableTimeout,
+                        props.tries
                     )
                 }).awaitAll()
             PowerIspState(power, isp)
@@ -43,7 +45,8 @@ class PingServiceImpl(
                 scope.async(Dispatchers.IO) {
                     ping.isIcmpReachable(
                         InetAddress.getByName(config.address),
-                        props.reachableTimeout
+                        props.reachableTimeout,
+                        props.tries
                     )
                 }.await(),
                 null

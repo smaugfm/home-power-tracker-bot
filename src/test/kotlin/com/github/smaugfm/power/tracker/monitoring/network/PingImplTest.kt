@@ -20,13 +20,15 @@ class PingImplTest : NoLiquibaseTestBase() {
         assertThat(
             service.isIcmpReachable(
                 InetAddress.getByName("google.com"),
-                Duration.ofSeconds(1)
+                Duration.ofSeconds(1),
+                3
             )
         ).isTrue()
         assertThat(
             service.isTcpReachable(
                 InetSocketAddress(InetAddress.getByName("google.com"), 443),
-                Duration.ofSeconds(1)
+                Duration.ofSeconds(1),
+                3
             )
         ).isTrue()
     }

@@ -5,9 +5,15 @@ import java.net.InetSocketAddress
 import java.time.Duration
 
 interface Ping {
-    fun isIcmpReachable(address: InetAddress, timeout: Duration): Boolean
+    fun isIcmpReachable(
+        address: InetAddress,
+        eachTimeout: Duration,
+        tries: Int
+    ): Boolean
+
     fun isTcpReachable(
         address: InetSocketAddress,
-        timeout: Duration
+        eachTimeout: Duration,
+        tries: Int
     ): Boolean
 }
