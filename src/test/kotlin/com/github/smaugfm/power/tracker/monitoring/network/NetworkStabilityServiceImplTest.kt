@@ -5,6 +5,7 @@ import com.github.smaugfm.power.tracker.interaction.UserInteractionService
 import com.ninjasquad.springmockk.MockkBean
 import io.mockk.coEvery
 import io.mockk.every
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.TimeoutCancellationException
@@ -47,8 +48,8 @@ class NetworkStabilityServiceImplTest : NoLiquibaseTestBase() {
     fun networkStableUnstableTest() {
         val reachable = AtomicBoolean(true)
         every {
-            ping.isIcmpReachable(any(), any(), any())
-        } answers { reachable.get() }
+            ping.isIcmpReachable(any(), any(), any(), any())
+        } answers { CompletableDeferred(reachable.get()) }
         coEvery {
             interaction.postUnstableNetworkTimeout(any())
         } answers {}

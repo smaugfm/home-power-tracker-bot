@@ -1,44 +1,65 @@
 package com.github.smaugfm.power.tracker.monitoring.network
 
 import com.github.smaugfm.power.tracker.util.isZero
-import mu.KotlinLogging
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.delay
 import org.springframework.stereotype.Component
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.Socket
 import java.time.Duration
-
-private val log = KotlinLogging.logger { }
+import kotlin.time.toKotlinDuration
 
 @Component
 class PingImpl : Ping {
-    override fun isIcmpReachable(address: InetAddress, eachTimeout: Duration, tries: Int): Boolean =
-        Runtime.getRuntime()
-            .exec("fping -c $tries -p ${eachTimeout.toMillis()} ${address.hostAddress}")
-            .waitFor()
-            .isZero()
-
-    override fun isTcpReachable(
-        address: InetSocketAddress,
+    override fun isIcmpReachable(
+        scope: CoroutineScope,
+        address: String,
         eachTimeout: Duration,
         tries: Int
-    ): Boolean {
-        val socket = Socket()
-        val timeoutMs = eachTimeout.toMillis().toInt()
-        socket.soTimeout = timeoutMs
-        val connect = {
-            try {
-                socket.connect(address, timeoutMs)
-                true
-            } catch (e: Throwable) {
-                false
-            }
+    ) =
+        scope.async(Dispatchers.IO) {
+            Runtime.getRuntime()
+                .exec(
+                    "fping -c $tries -p " +
+                            "${eachTimeout.toMillis()} ${InetAddress.getByName(address).hostAddress}"
+                )
+                .waitFor()
+                .isZero()
         }
-        var attempt = 0
-        do {
-            if (connect())
-                return true
-        } while (attempt++ < tries)
-        return false
+
+    override fun isTcpReachable(
+        scope: CoroutineScope,
+        address: String,
+        port: Int,
+        eachTimeout: Duration,
+        tries: Int
+    ): Deferred<Boolean> {
+        val timeoutMs = eachTimeout.toMillis().toInt()
+        val interval = eachTimeout.dividedBy(2).toKotlinDuration()
+        return scope.async(Dispatchers.IO) {
+            val connect = {
+                val socket = Socket()
+                socket.soTimeout = timeoutMs
+
+                try {
+                    socket.connect(InetSocketAddress(address, port), timeoutMs)
+                    true
+                } catch (e: Throwable) {
+                    false
+                }
+            }
+
+            var attempt = 0
+            do {
+                if (connect())
+                    return@async true
+                delay(interval)
+            } while (attempt++ < tries)
+            return@async false
+        }
     }
 }

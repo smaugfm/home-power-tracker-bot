@@ -6,11 +6,15 @@ import com.github.smaugfm.power.tracker.interaction.UserInteractionService
 import com.github.smaugfm.power.tracker.monitoring.network.NetworkStabilityServiceImpl
 import com.github.smaugfm.power.tracker.monitoring.network.Ping
 import com.github.smaugfm.power.tracker.spring.NetworkStabilityProperties
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.fail
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ConfigurableApplicationContext
 import org.springframework.context.annotation.Bean
@@ -18,8 +22,6 @@ import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Primary
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.ContextConfiguration
-import java.net.InetAddress
-import java.net.InetSocketAddress
 import java.time.Duration
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -90,16 +92,23 @@ class IntegrationTest : RepositoryTestBase() {
             userInteractionService: UserInteractionService,
         ) =
             NetworkStabilityServiceImpl(object : Ping {
-                override fun isIcmpReachable(address: InetAddress, timeout: Duration, tries: Int) =
-                    stabilityBoolean.get()
+                override fun isIcmpReachable(
+                    scope: CoroutineScope,
+                    address: String,
+                    eachTimeout: Duration,
+                    tries: Int
+                ) = CompletableDeferred(stabilityBoolean.get())
 
                 override fun isTcpReachable(
-                    address: InetSocketAddress,
-                    timeout: Duration,
+                    scope: CoroutineScope,
+                    address: String,
+                    port: Int,
+                    eachTimeout: Duration,
                     tries: Int
-                ): Boolean {
-                    throw IllegalStateException("Should not be called")
+                ): Deferred<Boolean> {
+                    fail("Should not be called")
                 }
+
             }, props, userInteractionService)
     }
 }

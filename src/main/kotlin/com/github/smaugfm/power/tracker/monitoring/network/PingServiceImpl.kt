@@ -4,15 +4,9 @@ import com.github.smaugfm.power.tracker.dto.Monitorable
 import com.github.smaugfm.power.tracker.dto.PowerIspState
 import com.github.smaugfm.power.tracker.spring.MainLoopProperties
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
-import java.net.InetAddress
-import java.net.InetSocketAddress
-
-private val log = KotlinLogging.logger { }
 
 @Service
 class PingServiceImpl(
@@ -25,30 +19,31 @@ class PingServiceImpl(
     private suspend fun getState(scope: CoroutineScope, config: Monitorable) =
         if (config.port != null) {
             val (power, isp) = listOf(
-                scope.async(Dispatchers.IO) {
-                    ping.isTcpReachable(
-                        InetSocketAddress(config.address, config.port.toInt()),
-                        props.reachableTimeout,
-                        props.tries,
-                    )
-                },
-                scope.async(Dispatchers.IO) {
-                    ping.isIcmpReachable(
-                        InetAddress.getByName(config.address),
-                        props.reachableTimeout,
-                        props.tries
-                    )
-                }).awaitAll()
-            PowerIspState(power, isp)
+                ping.isTcpReachable(
+                    scope,
+                    config.address,
+                    config.port,
+                    props.reachableTimeout,
+                    props.tries,
+                ),
+                ping.isIcmpReachable(
+                    scope,
+                    config.address,
+                    props.reachableTimeout,
+                    props.tries
+                )
+            ).awaitAll()
+            PowerIspState(
+                power, isp
+            )
         } else {
             PowerIspState(
-                scope.async(Dispatchers.IO) {
-                    ping.isIcmpReachable(
-                        InetAddress.getByName(config.address),
-                        props.reachableTimeout,
-                        props.tries
-                    )
-                }.await(),
+                ping.isIcmpReachable(
+                    scope,
+                    config.address,
+                    props.reachableTimeout,
+                    props.tries
+                ).await(),
                 null
             )
         }

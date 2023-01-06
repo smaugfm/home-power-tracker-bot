@@ -6,9 +6,7 @@ import com.github.smaugfm.power.tracker.spring.NetworkStabilityProperties
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.TimeoutCancellationException
-import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.newSingleThreadContext
@@ -16,7 +14,6 @@ import kotlinx.coroutines.time.withTimeout
 import kotlinx.coroutines.withContext
 import mu.KotlinLogging
 import org.springframework.stereotype.Component
-import java.net.InetAddress
 import kotlin.time.toKotlinDuration
 
 private val log = KotlinLogging.logger { }
@@ -60,6 +57,11 @@ class NetworkStabilityServiceImpl(
                     val results = isOnline(scope)
                     val online = results.all { it.second }
                     if (!online) {
+                        log.info {
+                            "Failed to reach hosts: ${
+                                results.filter { !it.second }.joinToString(", ")
+                            }"
+                        }
                         if (successfulTriesAfterDrop > 1) {
                             log.info(
                                 "Network still has issues. " +
@@ -99,17 +101,15 @@ class NetworkStabilityServiceImpl(
         }
     }
 
-    private suspend fun isOnline(scope: CoroutineScope) =
-        props.hosts.map { host ->
-            scope.async(Dispatchers.IO) {
-                host to (ping.isIcmpReachable(
-                    InetAddress.getByName(host),
+    private suspend fun isOnline(scope: CoroutineScope): List<Pair<String, Boolean>> =
+        props.hosts.zip(
+            props.hosts.map { host ->
+                ping.isIcmpReachable(
+                    scope,
+                    host,
                     props.timeout,
                     props.tries
-                ).also {
-                    if (!it)
-                        log.debug { "Failed to reach $host" }
-                })
-            }
-        }.awaitAll()
+                )
+            }.awaitAll()
+        )
 }
