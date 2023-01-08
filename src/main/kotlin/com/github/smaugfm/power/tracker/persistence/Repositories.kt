@@ -30,7 +30,7 @@ interface EventsRepository : R2dbcRepository<EventEntity, Long> {
         type: EventType?,
     ): Mono<EventEntity>
 
-    fun findAllByConfigIdAndCreatedIsGreaterThanEqual(
+    fun findAllByConfigIdAndCreatedIsGreaterThanEqualOrderByCreatedAsc(
         configId: Long,
         after: Instant
     ): Flux<EventEntity>
@@ -40,4 +40,7 @@ interface TelegramChatIdsRepository : R2dbcRepository<TelegramChatIdEntity, Long
     fun findAllByConfigId(configId: Long): Flux<TelegramChatIdEntity>
 }
 
-interface TelegramMessagesRepository : R2dbcRepository<TelegramMessageEntity, Long>
+interface TelegramMessagesRepository : R2dbcRepository<TelegramMessageEntity, Long> {
+    fun findByMessageId(messageId: Long): Mono<TelegramMessageEntity>
+    fun findByEventId(eventId: Long): Mono<TelegramMessageEntity>
+}

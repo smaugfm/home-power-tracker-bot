@@ -70,6 +70,14 @@ class RepositoryTestBase : TestBase() {
             )
         ).block()!!
 
+    protected fun saveConfigNoPort(): ConfigEntity =
+        configRepository.save(
+            ConfigEntity(
+                "vasa.com",
+                null
+            )
+        ).block()!!
+
     companion object {
         @BeforeAll
         @JvmStatic

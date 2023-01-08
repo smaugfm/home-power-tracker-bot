@@ -19,7 +19,7 @@ class EventsServiceImplTest : RepositoryTestBase() {
     private lateinit var service: EventsService
 
     @Test
-    fun deleteAndGetLaterEventsTest() {
+    fun getLaterEventsTest() {
         val configId = saveConfig1().id
         val configId2 = saveConfig2().id
 
@@ -42,11 +42,13 @@ class EventsServiceImplTest : RepositoryTestBase() {
             """.trimIndent()
         ).then().block()
 
+        val event = runBlocking { service.getEvent(4L) }!!
         val result = runBlocking {
-            service.deleteAndGetLaterEvents(4L).toList()
+            service.getEventsAfter(event.configId, event.time).toList()
         }
-        assertThat(result).hasSize(1)
-        assertThat(result[0].id).isEqualTo(6L)
+        assertThat(result).hasSize(2)
+        assertThat(result[0].id).isEqualTo(4L)
+        assertThat(result[1].id).isEqualTo(6L)
     }
 
     @Test

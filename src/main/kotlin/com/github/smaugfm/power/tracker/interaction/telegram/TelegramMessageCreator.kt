@@ -10,8 +10,10 @@ import java.util.Locale
 
 @Component
 class TelegramMessageCreator {
-    fun getTelegramMessages(stats: List<EventStats>): List<String> =
-        stats.map(::createText)
+    private val statsSeparator = "\n\n"
+
+    fun getTelegramMessage(stats: List<EventStats>): String =
+        stats.joinToString(statsSeparator, transform = ::createText)
 
     fun unstableNetworkMessage(duration: Duration) =
         "Мережа на сервері бота нестабільна останні ${humanReadable(duration)}"
@@ -19,7 +21,7 @@ class TelegramMessageCreator {
     private fun createText(stats: EventStats): String =
         when (stats) {
             is EventStats.Single ->
-                "${simpleSingleEventText(stats)} \n\n ${extendedSingleEventText(stats)}"
+                "${simpleSingleEventText(stats)} $statsSeparator ${extendedSingleEventText(stats)}"
 
             is EventStats.Summary -> TODO()
         }

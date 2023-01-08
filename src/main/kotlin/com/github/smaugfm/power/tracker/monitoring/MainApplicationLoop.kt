@@ -50,7 +50,7 @@ class MainApplicationLoop(
                                     "prev: $prevState, cur: $currentState"
                         }
                         events.calculateAddEvents(prevState, currentState, monitorable.id)
-                            .collect { userInteraction.postEvent(it) }
+                            .collect { userInteraction.postForEvent(it) }
                     }
                 }
             } catch (e: Throwable) {
@@ -65,12 +65,20 @@ class MainApplicationLoop(
     fun deletionLoopJob(
         userInteraction: UserInteractionService,
         events: EventsService,
-    ): LaunchCoroutineBean = object : LaunchCoroutineBean {
+    ) = object : LaunchCoroutineBean {
         override suspend fun launch(scope: CoroutineScope) {
             userInteraction.deletionFlow().collect { eventId ->
-                events.deleteAndGetLaterEvents(eventId).collect { updated ->
-                    userInteraction.updateEvent(updated)
+                val event = events.getEvent(eventId)
+                if (event == null) {
+                    log.warn { "Missing event for eventId=$eventId" }
+                    return@collect
                 }
+                userInteraction.deleteForEvent(event)
+                events.deleteEvent(eventId)
+
+                events
+                    .getEventsAfter(event.configId, event.time)
+                    .collect(userInteraction::updateForEvent)
             }
         }
     }
@@ -79,7 +87,7 @@ class MainApplicationLoop(
     fun exportLoopJob(
         userInteraction: UserInteractionService,
         events: EventsService
-    ): LaunchCoroutineBean = object : LaunchCoroutineBean {
+    ) = object : LaunchCoroutineBean {
         override suspend fun launch(scope: CoroutineScope) {
             userInteraction.exportFlow().collect { configId ->
                 userInteraction.exportEvents(configId, events.findAllEvents(configId))

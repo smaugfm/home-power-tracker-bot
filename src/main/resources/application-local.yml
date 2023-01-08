@@ -7,3 +7,11 @@ spring:
     user: postgres
     driver-class-name: org.postgresql.Driver
     default-schema: public
+app:
+  loop:
+    interval: 5s
+    reachable-timeout: 5s
+    tries: 2
+  network-stability:
+    tries: 2
+    consecutive-tries-to-consider-online: 5

@@ -15,7 +15,7 @@ class TelegramMessageCreatorTest : NoLiquibaseTestBase() {
     @Test
     fun getTelegramMessages() {
         println(
-            creator.getTelegramMessages(
+            creator.getTelegramMessage(
                 listOf(
                     EventStats.Single.LastInverseOnly(
                         false,
@@ -27,10 +27,10 @@ class TelegramMessageCreatorTest : NoLiquibaseTestBase() {
                             .plusMillis(342)
                     )
                 )
-            )[0]
+            )
         )
         println(
-            creator.getTelegramMessages(
+            creator.getTelegramMessage(
                 listOf(
                     EventStats.Single.LastInverseOnly(
                         true,
@@ -42,10 +42,10 @@ class TelegramMessageCreatorTest : NoLiquibaseTestBase() {
                             .plusMillis(342)
                     )
                 )
-            )[0]
+            )
         )
         println(
-            creator.getTelegramMessages(
+            creator.getTelegramMessage(
                 listOf(
                     EventStats.Single.IspDownStats(
                         Duration.ofDays(3)
@@ -65,7 +65,7 @@ class TelegramMessageCreatorTest : NoLiquibaseTestBase() {
                             .plusMillis(342),
                     )
                 )
-            )[0]
+            )
         )
     }
 }

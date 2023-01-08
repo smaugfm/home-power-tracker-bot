@@ -10,11 +10,12 @@ import com.github.smaugfm.power.tracker.persistence.EventsRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactive.awaitFirstOrNull
+import kotlinx.coroutines.reactor.awaitSingleOrNull
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
 import org.springframework.transaction.ReactiveTransactionManager
-import org.springframework.transaction.reactive.TransactionalOperator
 import reactor.core.publisher.Flux
+import java.time.Instant
 
 private val log = KotlinLogging.logger { }
 
@@ -24,10 +25,12 @@ class EventsServiceImpl(
     private val tm: ReactiveTransactionManager,
 ) : EventsService {
 
-    override suspend fun findAllEvents(configId: ConfigId): Flow<Event> {
-        return eventsRepository.findAllByConfigId(configId)
+    override suspend fun findAllEvents(configId: ConfigId): Flow<Event> =
+        eventsRepository.findAllByConfigId(configId)
             .mapFluxDto()
-    }
+
+    override suspend fun getEvent(eventId: EventId): Event? =
+        eventsRepository.findById(eventId).awaitSingleOrNull()?.let(::mapDto)
 
     override suspend fun findPreviousLike(
         event: Event,
@@ -38,21 +41,16 @@ class EventsServiceImpl(
             .awaitFirstOrNull()
             ?.let(this::mapDto)
 
-    override suspend fun deleteAndGetLaterEvents(eventId: EventId): Flow<Event> =
-        eventsRepository
-            .findById(eventId)
-            .flatMap {
-                eventsRepository
-                    .deleteById(it.id)
-                    .thenReturn(it)
-            }.flatMapMany {
-                eventsRepository.findAllByConfigIdAndCreatedIsGreaterThanEqual(
-                    it.configId,
-                    it.created
-                )
-            }
-            .`as`(TransactionalOperator.create(tm)::transactional)
-            .mapFluxDto()
+    override suspend fun getEventsAfter(configId: ConfigId, time: Instant): Flow<Event> =
+        eventsRepository.findAllByConfigIdAndCreatedIsGreaterThanEqualOrderByCreatedAsc(
+            configId,
+            time
+        ).mapFluxDto()
+
+    override suspend fun deleteEvent(eventId: EventId) {
+        log.info { "Deleting eventId=$eventId" }
+        eventsRepository.deleteById(eventId).awaitSingleOrNull()
+    }
 
     override fun calculateAddEvents(
         prevState: PowerIspState,

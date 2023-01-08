@@ -12,6 +12,7 @@ import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
@@ -37,10 +38,13 @@ class IntegrationTest : RepositoryTestBase() {
     private lateinit var stabilityBoolean: AtomicBoolean
 
     @Autowired
+    private lateinit var userInteractionOperations: TestUserInteractionOperations
+
+    @Autowired
     private lateinit var context: ConfigurableApplicationContext
 
     @Test
-    fun integration() {
+    fun networkStableUnstableTest() {
         saveConfig1()
         stabilityBoolean.set(false)
 
@@ -69,6 +73,32 @@ class IntegrationTest : RepositoryTestBase() {
 
         println("NETWORK STABLE")
         stabilityBoolean.set(true)
+        Thread.sleep(1000)
+    }
+
+    @Test
+    fun deletionTest() {
+        saveConfigNoPort()
+        stabilityBoolean.set(true)
+        ping.icmp.set(true)
+        ping.tcp.set(true)
+        GlobalScope.launch {
+            println("LAUNCH icmp=true")
+            Application.run(context)
+        }
+        Thread.sleep(1000)
+
+        println("icmp=false")
+        ping.icmp.set(false)
+        Thread.sleep(1000)
+
+        println("icmp=true")
+        ping.icmp.set(true)
+        Thread.sleep(1000)
+
+        runBlocking {
+            userInteractionOperations.deletionChannel.send(1)
+        }
         Thread.sleep(1000)
     }
 

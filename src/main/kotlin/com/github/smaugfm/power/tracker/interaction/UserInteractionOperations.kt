@@ -8,8 +8,9 @@ import kotlinx.coroutines.flow.Flow
 import java.time.Duration
 
 interface UserInteractionOperations {
-    suspend fun postEvent(event: Event, stats: List<EventStats>)
-    suspend fun updateEvent(event: Event, stats: List<EventStats>)
+    suspend fun postForEvent(event: Event, stats: List<EventStats>)
+    suspend fun updateForEvent(event: Event, stats: List<EventStats>)
+    suspend fun deleteForEvent(event: Event)
     suspend fun postExport(configId: ConfigId, events: Flow<Event>)
     suspend fun postUnstableNetworkTimeout(duration: Duration)
 

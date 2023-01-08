@@ -5,7 +5,9 @@ import com.github.smaugfm.power.tracker.dto.Event
 import com.github.smaugfm.power.tracker.dto.EventId
 import com.github.smaugfm.power.tracker.interaction.UserInteractionOperations
 import com.github.smaugfm.power.tracker.stats.EventStats
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.flow.emptyFlow
 import mu.KotlinLogging
 import java.time.Duration
@@ -13,12 +15,18 @@ import java.time.Duration
 val log = KotlinLogging.logger { }
 
 class TestUserInteractionOperations : UserInteractionOperations {
-    override suspend fun postEvent(event: Event, stats: List<EventStats>) {
+    override suspend fun postForEvent(event: Event, stats: List<EventStats>) {
         log.info { "EVENT: $event, stats: $stats" }
     }
 
-    override suspend fun updateEvent(event: Event, stats: List<EventStats>) {
-        TODO("Not yet implemented")
+    val deletionChannel = Channel<EventId>()
+
+    override suspend fun updateForEvent(event: Event, stats: List<EventStats>) {
+        log.info { "UPDATE FOR EVENT: $event, stats: $stats" }
+    }
+
+    override suspend fun deleteForEvent(event: Event) {
+        log.info { "DELETE FOR EVENT: $event" }
     }
 
     override suspend fun postExport(configId: ConfigId, events: Flow<Event>) {
@@ -29,9 +37,8 @@ class TestUserInteractionOperations : UserInteractionOperations {
         log.info { "NETWORK UNSTABLE for $duration" }
     }
 
-    override fun deletionFlow(): Flow<EventId> {
-        return emptyFlow()
-    }
+    override fun deletionFlow(): Flow<EventId> =
+        deletionChannel.consumeAsFlow()
 
     override fun exportFlow(): Flow<ConfigId> {
         return emptyFlow()

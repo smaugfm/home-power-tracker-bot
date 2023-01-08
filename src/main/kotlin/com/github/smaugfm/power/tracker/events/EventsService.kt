@@ -6,9 +6,13 @@ import com.github.smaugfm.power.tracker.dto.EventId
 import com.github.smaugfm.power.tracker.dto.EventType
 import com.github.smaugfm.power.tracker.dto.PowerIspState
 import kotlinx.coroutines.flow.Flow
+import java.time.Instant
 
 interface EventsService {
-    suspend fun deleteAndGetLaterEvents(eventId: EventId): Flow<Event>
+    suspend fun getEvent(eventId: EventId): Event?
+    suspend fun deleteEvent(eventId: EventId)
+    suspend fun getEventsAfter(configId: ConfigId, time: Instant): Flow<Event>
+
     fun calculateAddEvents(
         prevState: PowerIspState,
         currentState: PowerIspState,

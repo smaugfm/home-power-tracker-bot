@@ -20,19 +20,27 @@ class UserInteractionServiceImpl(
     private val statsService: StatsService,
     private val operations: List<UserInteractionOperations>
 ) : UserInteractionService {
-    override suspend fun postEvent(event: Event) {
+    override suspend fun postForEvent(event: Event) {
         val stats = statsService.calculateEventStats(event)
 
         log.info { "Notifying of an event: $event with stats $stats" }
         operations.forEach {
-            it.postEvent(event, stats)
+            it.postForEvent(event, stats)
         }
     }
 
-    override suspend fun updateEvent(event: Event) {
-        val stats = statsService.calculateEventStats(event)
+    override suspend fun deleteForEvent(event: Event) {
+        log.info { "Deleting notifications for event: $event" }
         operations.forEach {
-            it.updateEvent(event, stats)
+            it.deleteForEvent(event)
+        }
+    }
+
+    override suspend fun updateForEvent(event: Event) {
+        val stats = statsService.calculateEventStats(event)
+        log.info { "Updating notifications or event $event with new stats $stats" }
+        operations.forEach {
+            it.updateForEvent(event, stats)
         }
     }
 
