@@ -21,6 +21,7 @@ import dev.inmo.tgbotapi.utils.RiskFeature
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
@@ -82,51 +83,55 @@ class TelegramUserInteractionOperations(
 
     override suspend fun updateForEvent(event: Event, stats: List<EventStats>) {
         val newText = formatter.getTelegramMessage(stats)
-        val messageEntity = messagesRepository
-            .findByEventId(event.id)
-            .awaitSingleOrNull()
-        if (messageEntity == null) {
-            log.warn { "Did not find message to update for event $event" }
-            return
-        }
-        try {
-            bot.editMessageText(
-                ChatId(messageEntity.chatId),
-                messageEntity.messageId,
-                TelegramMarkdownV2Format.escape(newText),
-                MarkdownV2ParseMode
-            )
-            log.info {
-                "Updated Telegram messageId=${messageEntity.messageId} in " +
-                        "chatId=${messageEntity.chatId} for event $event with new stats"
+        messagesRepository
+            .findAllByEventId(event.id)
+            .switchIfEmpty {
+                log.warn { "Did not find any messages to update for event $event" }
             }
-        } catch (e: Throwable) {
-            log.error(e) {
-                "Error updating Telegram messageId=${messageEntity.messageId} " +
-                        "in chatId=${messageEntity.chatId} for event: $event"
+            .asFlow()
+            .map { messageEntity ->
+                try {
+                    bot.editMessageText(
+                        ChatId(messageEntity.chatId),
+                        messageEntity.messageId,
+                        TelegramMarkdownV2Format.escape(newText),
+                        MarkdownV2ParseMode
+                    )
+                    log.info {
+                        "Updated Telegram messageId=${messageEntity.messageId} in " +
+                                "chatId=${messageEntity.chatId} for event $event with new stats"
+                    }
+                } catch (e: Throwable) {
+                    log.error(e) {
+                        "Error updating Telegram messageId=${messageEntity.messageId} " +
+                                "in chatId=${messageEntity.chatId} for event: $event"
+                    }
+                }
             }
-        }
+            .collect()
     }
 
     override suspend fun deleteForEvent(event: Event) {
-        val messageEntity = messagesRepository
-            .findByEventId(event.id)
-            .awaitSingleOrNull()
-        if (messageEntity == null) {
-            log.warn { "Did not find message to delete for event $event" }
-            return
-        }
-        try {
-            messagesRepository
-                .deleteById(messageEntity.id)
-                .awaitSingleOrNull()
-            bot.deleteMessage(ChatId(messageEntity.chatId), messageEntity.messageId)
-        } catch (e: Throwable) {
-            log.error(e) {
-                "Error deleting Telegram messageId=${messageEntity.id} " +
-                        "in chatId=${messageEntity.chatId} for event: $event}"
+        messagesRepository
+            .findAllByEventId(event.id)
+            .switchIfEmpty {
+                log.warn { "Did not find message to delete for event $event" }
             }
-        }
+            .asFlow()
+            .map { messageEntity ->
+                try {
+                    messagesRepository
+                        .deleteById(messageEntity.id)
+                        .awaitSingleOrNull()
+                    bot.deleteMessage(ChatId(messageEntity.chatId), messageEntity.messageId)
+                } catch (e: Throwable) {
+                    log.error(e) {
+                        "Error deleting Telegram messageId=${messageEntity.id} " +
+                                "in chatId=${messageEntity.chatId} for event: $event}"
+                    }
+                }
+            }
+            .collect()
     }
 
     override suspend fun postExport(configId: ConfigId, events: Flow<Event>) {
@@ -156,13 +161,13 @@ class TelegramUserInteractionOperations(
             .mapNotNull { message ->
                 message.replyTo?.messageId?.let {
                     messagesRepository
-                        .findByMessageId(it)
+                        .findByMessageIdAndChatId(it, message.chat.id.chatId)
                         .awaitSingleOrNull()
                 }.also {
                     if (it == null)
                         log.warn {
-                            "User replied to messageId=${message.replyTo?.messageId} " +
-                                    "without an attached event."
+                            "User chatId=${message.chat.id.chatId} replied to " +
+                                    "messageId=${message.replyTo?.messageId} without an attached event."
                         }
                 }
             }.map {

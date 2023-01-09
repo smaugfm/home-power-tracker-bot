@@ -43,6 +43,6 @@ interface TelegramChatIdsRepository : R2dbcRepository<TelegramChatIdEntity, Long
 }
 
 interface TelegramMessagesRepository : R2dbcRepository<TelegramMessageEntity, Long> {
-    fun findByMessageId(messageId: Long): Mono<TelegramMessageEntity>
-    fun findByEventId(eventId: Long): Mono<TelegramMessageEntity>
+    fun findByMessageIdAndChatId(messageId: Long, chatId: Long): Mono<TelegramMessageEntity>
+    fun findAllByEventId(eventId: Long): Flux<TelegramMessageEntity>
 }
