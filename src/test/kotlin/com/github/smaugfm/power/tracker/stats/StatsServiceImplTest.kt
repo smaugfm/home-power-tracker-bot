@@ -5,7 +5,7 @@ import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
 import assertk.assertions.isFalse
 import com.github.smaugfm.power.tracker.RepositoryTestBase
-import com.github.smaugfm.power.tracker.dto.EventType
+import com.github.smaugfm.power.tracker.EventType
 import com.github.smaugfm.power.tracker.events.EventsService
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking

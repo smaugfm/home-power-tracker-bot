@@ -6,7 +6,7 @@ import assertk.assertions.hasSize
 import assertk.assertions.isEqualTo
 import assertk.assertions.isGreaterThanOrEqualTo
 import com.github.smaugfm.power.tracker.RepositoryTestBase
-import com.github.smaugfm.power.tracker.dto.PowerIspState
+import com.github.smaugfm.power.tracker.PowerIspState
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test

@@ -69,7 +69,6 @@ class Migration : NoLiquibaseTestBase() {
                 Flux.fromIterable(config.events)
                     .index()
                     .flatMap { eventTuple ->
-                        val index = eventTuple.t1
                         val event = eventTuple.t2
                         val parsedTime = ZonedDateTime.parse(event.time)
                         val psqlTime = parsedTime.format(format)

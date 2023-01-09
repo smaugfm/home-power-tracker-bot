@@ -1,4 +1,4 @@
-package com.github.smaugfm.power.tracker.monitoring.network
+package com.github.smaugfm.power.tracker.network
 
 import com.github.smaugfm.power.tracker.util.isZero
 import kotlinx.coroutines.CoroutineScope

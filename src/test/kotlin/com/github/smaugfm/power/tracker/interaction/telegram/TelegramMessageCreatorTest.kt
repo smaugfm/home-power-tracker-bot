@@ -1,7 +1,7 @@
 package com.github.smaugfm.power.tracker.interaction.telegram
 
 import com.github.smaugfm.power.tracker.NoLiquibaseTestBase
-import com.github.smaugfm.power.tracker.dto.EventType
+import com.github.smaugfm.power.tracker.EventType
 import com.github.smaugfm.power.tracker.stats.EventStats
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired

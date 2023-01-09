@@ -1,9 +1,7 @@
-package com.github.smaugfm.power.tracker.monitoring.network
+package com.github.smaugfm.power.tracker.network
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
-import java.net.InetAddress
-import java.net.InetSocketAddress
 import java.time.Duration
 
 interface Ping {

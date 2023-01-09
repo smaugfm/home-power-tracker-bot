@@ -1,8 +1,8 @@
 package com.github.smaugfm.power.tracker.interaction.telegram
 
-import com.github.smaugfm.power.tracker.dto.ConfigId
-import com.github.smaugfm.power.tracker.dto.Event
-import com.github.smaugfm.power.tracker.dto.EventId
+import com.github.smaugfm.power.tracker.ConfigId
+import com.github.smaugfm.power.tracker.Event
+import com.github.smaugfm.power.tracker.EventId
 import com.github.smaugfm.power.tracker.interaction.UserInteractionOperations
 import com.github.smaugfm.power.tracker.persistence.TelegramChatIdsRepository
 import com.github.smaugfm.power.tracker.persistence.TelegramMessageEntity

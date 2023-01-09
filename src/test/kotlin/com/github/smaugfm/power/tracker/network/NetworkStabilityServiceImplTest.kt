@@ -1,4 +1,4 @@
-package com.github.smaugfm.power.tracker.monitoring.network
+package com.github.smaugfm.power.tracker.network
 
 import com.github.smaugfm.power.tracker.NoLiquibaseTestBase
 import com.github.smaugfm.power.tracker.interaction.UserInteractionService
@@ -29,7 +29,7 @@ import java.util.concurrent.atomic.AtomicBoolean
         "app.network-stability.consecutive-tries-to-consider-online=3",
         "app.network-stability.tries=2",
         "app.network-stability.hosts=1.1.1.1",
-        "logging.level.com.github.smaugfm.power.tracker.monitoring.network.NetworkStabilityServiceImpl=DEBUG"
+        "logging.level.com.github.smaugfm.power.tracker.network.NetworkStabilityServiceImpl=DEBUG"
     ]
 )
 @DelicateCoroutinesApi

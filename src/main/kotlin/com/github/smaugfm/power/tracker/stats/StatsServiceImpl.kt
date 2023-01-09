@@ -1,7 +1,7 @@
 package com.github.smaugfm.power.tracker.stats
 
-import com.github.smaugfm.power.tracker.dto.Event
-import com.github.smaugfm.power.tracker.dto.EventType
+import com.github.smaugfm.power.tracker.Event
+import com.github.smaugfm.power.tracker.EventType
 import com.github.smaugfm.power.tracker.events.EventsService
 import kotlinx.coroutines.FlowPreview
 import org.springframework.stereotype.Service

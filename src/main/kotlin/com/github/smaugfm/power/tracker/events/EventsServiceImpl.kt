@@ -1,10 +1,10 @@
 package com.github.smaugfm.power.tracker.events
 
-import com.github.smaugfm.power.tracker.dto.ConfigId
-import com.github.smaugfm.power.tracker.dto.Event
-import com.github.smaugfm.power.tracker.dto.EventId
-import com.github.smaugfm.power.tracker.dto.EventType
-import com.github.smaugfm.power.tracker.dto.PowerIspState
+import com.github.smaugfm.power.tracker.ConfigId
+import com.github.smaugfm.power.tracker.Event
+import com.github.smaugfm.power.tracker.EventId
+import com.github.smaugfm.power.tracker.EventType
+import com.github.smaugfm.power.tracker.PowerIspState
 import com.github.smaugfm.power.tracker.persistence.EventEntity
 import com.github.smaugfm.power.tracker.persistence.EventsRepository
 import kotlinx.coroutines.flow.Flow
@@ -13,7 +13,6 @@ import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
-import org.springframework.transaction.ReactiveTransactionManager
 import reactor.core.publisher.Flux
 import java.time.Instant
 
@@ -21,8 +20,7 @@ private val log = KotlinLogging.logger { }
 
 @Service
 class EventsServiceImpl(
-    private val eventsRepository: EventsRepository,
-    private val tm: ReactiveTransactionManager,
+    private val eventsRepository: EventsRepository
 ) : EventsService {
 
     override suspend fun findAllEvents(configId: ConfigId): Flow<Event> =

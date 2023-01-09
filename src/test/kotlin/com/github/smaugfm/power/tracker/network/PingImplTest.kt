@@ -1,4 +1,4 @@
-package com.github.smaugfm.power.tracker.monitoring.network
+package com.github.smaugfm.power.tracker.network
 
 import assertk.assertThat
 import assertk.assertions.isTrue

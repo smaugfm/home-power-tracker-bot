@@ -1,6 +1,6 @@
 package com.github.smaugfm.power.tracker.interaction.telegram
 
-import com.github.smaugfm.power.tracker.dto.EventType
+import com.github.smaugfm.power.tracker.EventType
 import com.github.smaugfm.power.tracker.stats.EventStats
 import net.time4j.PrettyTime
 import org.springframework.stereotype.Component

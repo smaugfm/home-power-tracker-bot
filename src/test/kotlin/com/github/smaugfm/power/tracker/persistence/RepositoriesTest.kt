@@ -5,7 +5,7 @@ import assertk.assertions.isEqualTo
 import assertk.assertions.isEqualToWithGivenProperties
 import assertk.assertions.isGreaterThanOrEqualTo
 import com.github.smaugfm.power.tracker.RepositoryTestBase
-import com.github.smaugfm.power.tracker.dto.EventType
+import com.github.smaugfm.power.tracker.EventType
 import org.junit.jupiter.api.Test
 import java.time.Instant
 

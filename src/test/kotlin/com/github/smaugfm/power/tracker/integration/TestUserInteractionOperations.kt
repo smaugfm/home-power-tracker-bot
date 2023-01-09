@@ -1,8 +1,8 @@
 package com.github.smaugfm.power.tracker.integration
 
-import com.github.smaugfm.power.tracker.dto.ConfigId
-import com.github.smaugfm.power.tracker.dto.Event
-import com.github.smaugfm.power.tracker.dto.EventId
+import com.github.smaugfm.power.tracker.ConfigId
+import com.github.smaugfm.power.tracker.Event
+import com.github.smaugfm.power.tracker.EventId
 import com.github.smaugfm.power.tracker.interaction.UserInteractionOperations
 import com.github.smaugfm.power.tracker.stats.EventStats
 import kotlinx.coroutines.channels.Channel

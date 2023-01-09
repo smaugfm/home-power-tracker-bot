@@ -1,10 +1,10 @@
 package com.github.smaugfm.power.tracker.events
 
-import com.github.smaugfm.power.tracker.dto.ConfigId
-import com.github.smaugfm.power.tracker.dto.Event
-import com.github.smaugfm.power.tracker.dto.EventId
-import com.github.smaugfm.power.tracker.dto.EventType
-import com.github.smaugfm.power.tracker.dto.PowerIspState
+import com.github.smaugfm.power.tracker.ConfigId
+import com.github.smaugfm.power.tracker.Event
+import com.github.smaugfm.power.tracker.EventId
+import com.github.smaugfm.power.tracker.EventType
+import com.github.smaugfm.power.tracker.PowerIspState
 import kotlinx.coroutines.flow.Flow
 import java.time.Instant
 

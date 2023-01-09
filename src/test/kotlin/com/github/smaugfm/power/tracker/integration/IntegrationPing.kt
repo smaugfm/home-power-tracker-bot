@@ -1,6 +1,6 @@
 package com.github.smaugfm.power.tracker.integration
 
-import com.github.smaugfm.power.tracker.monitoring.network.Ping
+import com.github.smaugfm.power.tracker.network.Ping
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred

@@ -3,8 +3,8 @@ package com.github.smaugfm.power.tracker.integration
 import com.github.smaugfm.power.tracker.Application
 import com.github.smaugfm.power.tracker.RepositoryTestBase
 import com.github.smaugfm.power.tracker.interaction.UserInteractionService
-import com.github.smaugfm.power.tracker.monitoring.network.NetworkStabilityServiceImpl
-import com.github.smaugfm.power.tracker.monitoring.network.Ping
+import com.github.smaugfm.power.tracker.network.NetworkStabilityServiceImpl
+import com.github.smaugfm.power.tracker.network.Ping
 import com.github.smaugfm.power.tracker.spring.NetworkStabilityProperties
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope

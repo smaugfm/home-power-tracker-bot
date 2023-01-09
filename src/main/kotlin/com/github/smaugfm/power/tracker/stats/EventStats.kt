@@ -1,7 +1,7 @@
 package com.github.smaugfm.power.tracker.stats
 
-import com.github.smaugfm.power.tracker.dto.EventSummaryType
-import com.github.smaugfm.power.tracker.dto.EventType
+import com.github.smaugfm.power.tracker.EventSummaryType
+import com.github.smaugfm.power.tracker.EventType
 import java.time.Duration
 
 sealed class EventStats {

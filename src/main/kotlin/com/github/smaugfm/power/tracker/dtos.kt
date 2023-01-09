@@ -1,4 +1,4 @@
-package com.github.smaugfm.power.tracker.dto
+package com.github.smaugfm.power.tracker
 
 import java.time.Duration
 import java.time.Instant
@@ -15,7 +15,6 @@ data class Event(
 
 typealias EventId = Long
 typealias ConfigId = Long
-typealias MessageId = dev.inmo.tgbotapi.types.MessageId
 
 enum class EventType {
     POWER,
@@ -33,7 +32,7 @@ data class PowerIspState(
     val hasIsp: Boolean?
 )
 
-data class Monitorable(
+data class Config(
     val id: ConfigId,
     val address: String,
     val port: Int?,
