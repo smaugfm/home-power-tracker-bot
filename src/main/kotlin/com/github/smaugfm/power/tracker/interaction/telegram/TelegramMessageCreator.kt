@@ -40,7 +40,7 @@ class TelegramMessageCreator {
 
             is EventStats.Single.IspDownStats -> {
                 val str =
-                    StringBuilder("Скільки був: ${this.humanReadable(stats.lastInverse)}.")
+                    StringBuilder("Скільки був: ${this.humanReadable(stats.lastInverse)}")
                 if (stats.lastUPSOperation != null)
                     str.append("\nЗ цього, працював ДБЖ: ${this.humanReadable(stats.lastUPSOperation)}")
                 if (stats.lastUPSCharge != null)
