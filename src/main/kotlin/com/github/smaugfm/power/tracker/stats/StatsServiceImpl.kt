@@ -58,7 +58,6 @@ class StatsServiceImpl(
     }
 
     private fun summaryEventStats(
-        @Suppress("UNUSED_PARAMETER")
         event: Event
     ): List<EventStats.Summary> {
         //TODO

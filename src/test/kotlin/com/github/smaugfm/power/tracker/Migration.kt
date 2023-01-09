@@ -34,8 +34,7 @@ class Migration : NoLiquibaseTestBase() {
 
     @Test
     fun migrateOldDb() {
-        val result = Klaxon()
-            .parseArray<OldDbConfig>(getResourceAsText("db.json")!!)!!
+        val result = getOldDb()
 
         val pairs = Flux.fromIterable(result)
             .flatMap { config ->
@@ -51,7 +50,7 @@ class Migration : NoLiquibaseTestBase() {
                 }
             }.collectList()
             .block()!!
-        val entities = Flux.fromIterable(pairs)
+        Flux.fromIterable(pairs)
             .flatMap { (configEntity, config) ->
                 Flux.fromIterable(config.telegramChatIds)
                     .flatMap { telegramChatId ->
@@ -106,6 +105,13 @@ class Migration : NoLiquibaseTestBase() {
         val notificationSettings: OldDbNotificationSettings
     )
 
-    private fun getResourceAsText(path: String): String? =
-        Migration::javaClass.javaClass.classLoader.getResource(path)?.readText()
+    private fun getOldDb() =
+        Klaxon()
+            .parseArray<OldDbConfig>(
+                Migration::javaClass
+                    .javaClass
+                    .classLoader
+                    .getResource("db.json")
+                    ?.readText()!!
+            )!!
 }

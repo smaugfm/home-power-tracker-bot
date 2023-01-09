@@ -1,6 +1,6 @@
 package com.github.smaugfm.power.tracker.network
 
-import com.github.smaugfm.power.tracker.util.isZero
+import com.github.smaugfm.power.tracker.isZero
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers

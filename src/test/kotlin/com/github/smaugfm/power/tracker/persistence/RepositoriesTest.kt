@@ -19,8 +19,8 @@ class RepositoriesTest : RepositoryTestBase() {
             ConfigEntity(
                 "vasa.com",
                 8080,
-                true,
-                true,
+                notifyPower = true,
+                notifyIsp = true,
                 1L
             ),
             ConfigEntity::address,

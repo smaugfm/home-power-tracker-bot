@@ -5,8 +5,8 @@ import assertk.assertThat
 import assertk.assertions.hasSize
 import assertk.assertions.isEqualTo
 import assertk.assertions.isGreaterThanOrEqualTo
-import com.github.smaugfm.power.tracker.RepositoryTestBase
 import com.github.smaugfm.power.tracker.PowerIspState
+import com.github.smaugfm.power.tracker.RepositoryTestBase
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
@@ -55,8 +55,8 @@ class EventsServiceImplTest : RepositoryTestBase() {
     fun calculateLaterEventsTest() {
         val configId = saveConfig1().id
 
-        val prev = PowerIspState(null, null)
-        val next = PowerIspState(true, true)
+        val prev = PowerIspState(hasPower = null, hasIsp = null)
+        val next = PowerIspState(hasPower = true, hasIsp = true)
 
         val now = Instant.now()
         val events = runBlocking { service.calculateAddEvents(prev, next, configId).toList() }
@@ -102,9 +102,9 @@ class EventsServiceImplTest : RepositoryTestBase() {
         ).then().block()
 
         var result = runBlocking { service.getCurrentState(configId) }
-        assertThat(result).isEqualTo(PowerIspState(false, true))
+        assertThat(result).isEqualTo(PowerIspState(hasPower = false, hasIsp = true))
         result = runBlocking { service.getCurrentState(configId2) }
-        assertThat(result).isEqualTo(PowerIspState(true, null))
+        assertThat(result).isEqualTo(PowerIspState(hasPower = true, hasIsp = null))
     }
 
 }
