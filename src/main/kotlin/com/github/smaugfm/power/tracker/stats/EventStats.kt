@@ -1,15 +1,19 @@
 package com.github.smaugfm.power.tracker.stats
 
-import com.github.smaugfm.power.tracker.EventSummaryType
 import com.github.smaugfm.power.tracker.EventType
+import com.github.smaugfm.power.tracker.LastInverseStats
+import com.github.smaugfm.power.tracker.PeriodicStats
+import com.github.smaugfm.power.tracker.SummaryStatsPeriod
 import java.time.Duration
 
-sealed class EventStats {
+sealed class EventStats(
+    open val type: EventType,
+) {
     sealed class Single(
         open val state: Boolean,
-        open val type: EventType,
+        type: EventType,
         override val lastInverse: Duration
-    ) : EventStats(), LastInverseStats {
+    ) : EventStats(type), LastInverseStats {
         data class LastInverseOnly(
             override val state: Boolean,
             override val type: EventType,
@@ -23,14 +27,14 @@ sealed class EventStats {
         ) : Single(false, EventType.ISP, lastInverse)
     }
 
-    class Summary(
-        val summaryType: EventSummaryType,
+    data class Summary(
+        override val type: EventType,
+        val period: SummaryStatsPeriod,
         val upTotal: Duration,
         val downTotal: Duration,
         val upPercent: Double,
-    ) : EventStats()
+        val upPeriodicStats: PeriodicStats,
+        val downPeriodicStats: PeriodicStats
+    ) : EventStats(type)
 
-    interface LastInverseStats {
-        val lastInverse: Duration
-    }
 }

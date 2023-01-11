@@ -1,10 +1,6 @@
 package com.github.smaugfm.power.tracker.events
 
-import com.github.smaugfm.power.tracker.ConfigId
-import com.github.smaugfm.power.tracker.Event
-import com.github.smaugfm.power.tracker.EventId
-import com.github.smaugfm.power.tracker.EventType
-import com.github.smaugfm.power.tracker.PowerIspState
+import com.github.smaugfm.power.tracker.*
 import com.github.smaugfm.power.tracker.persistence.EventEntity
 import com.github.smaugfm.power.tracker.persistence.EventsRepository
 import kotlinx.coroutines.flow.Flow
@@ -43,6 +39,19 @@ class EventsServiceImpl(
         eventsRepository.findAllByConfigIdAndCreatedIsGreaterThanEqualOrderByCreatedAsc(
             configId,
             time
+        ).mapFluxDto()
+
+    override suspend fun getEventsOfTypeBetween(
+        configId: ConfigId,
+        type: EventType,
+        from: Instant,
+        to: Instant
+    ): Flow<Event> =
+        eventsRepository.findAllByConfigIdAndTypeAndCreatedBetween(
+            configId,
+            type,
+            from,
+            to
         ).mapFluxDto()
 
     override suspend fun deleteEvent(eventId: EventId) {

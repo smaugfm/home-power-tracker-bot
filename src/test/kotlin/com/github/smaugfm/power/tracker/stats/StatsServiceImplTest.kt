@@ -43,22 +43,22 @@ class StatsServiceImplTest : RepositoryTestBase() {
         val get = { i: Int -> events[i - 1] }
 
         assertThat(runBlocking {
-            service.calculateEventStats(get(1)).toList()
+            service.calculate(get(1)).toList()
         }).isEmpty()
 
         assertThat(runBlocking {
-            service.calculateEventStats(get(2)).toList()
+            service.calculate(get(2)).toList()
         }).isEmpty()
 
         val powerDown = runBlocking {
-            service.calculateEventStats(get(3)).toList()
+            service.calculate(get(3)).toList()
         }[0] as EventStats.Single.LastInverseOnly
         assertThat(powerDown.state).isFalse()
         assertThat(powerDown.type).isEqualTo(EventType.POWER)
         assertThat(powerDown.lastInverse).isEqualTo(Duration.ofDays(1))
 
         val ispDown = runBlocking {
-            service.calculateEventStats(get(4)).toList()
+            service.calculate(get(4)).toList()
         }[0] as EventStats.Single.IspDownStats
         assertThat(ispDown.state).isFalse()
         assertThat(ispDown.type).isEqualTo(EventType.ISP)

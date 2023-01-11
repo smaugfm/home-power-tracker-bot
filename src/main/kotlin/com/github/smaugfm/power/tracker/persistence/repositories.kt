@@ -32,6 +32,13 @@ interface EventsRepository : R2dbcRepository<EventEntity, Long> {
         type: EventType?,
     ): Mono<EventEntity>
 
+    fun findAllByConfigIdAndTypeAndCreatedBetween(
+        configId: Long,
+        type: EventType,
+        from: Instant,
+        to: Instant
+    ): Flux<EventEntity>
+
     fun findAllByConfigIdAndCreatedIsGreaterThanEqualOrderByCreatedAsc(
         configId: Long,
         after: Instant

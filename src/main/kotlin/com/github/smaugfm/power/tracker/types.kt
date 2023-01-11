@@ -21,12 +21,6 @@ enum class EventType {
     ISP
 }
 
-enum class EventSummaryType {
-    DAY,
-    WEEK,
-    MONTH
-}
-
 data class PowerIspState(
     val hasPower: Boolean?,
     val hasIsp: Boolean?
@@ -37,3 +31,21 @@ data class Config(
     val address: String,
     val port: Int?,
 )
+
+sealed class SummaryStatsPeriod {
+    object Week : SummaryStatsPeriod()
+    object Month : SummaryStatsPeriod()
+    object Year : SummaryStatsPeriod()
+    data class Custom(val days: Int) : SummaryStatsPeriod()
+}
+
+data class PeriodicStats(
+    val state: Boolean,
+    val longestPeriod: Duration,
+    val shortestPeriod: Duration,
+    val medianPeriod: Duration
+)
+
+interface LastInverseStats {
+    val lastInverse: Duration
+}

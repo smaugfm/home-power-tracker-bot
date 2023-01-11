@@ -3,6 +3,7 @@ package com.github.smaugfm.power.tracker.interaction
 import com.github.smaugfm.power.tracker.ConfigId
 import com.github.smaugfm.power.tracker.Event
 import com.github.smaugfm.power.tracker.EventId
+import com.github.smaugfm.power.tracker.stats.EventStats
 import com.github.smaugfm.power.tracker.stats.StatsService
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
@@ -17,11 +18,11 @@ private val log = KotlinLogging.logger { }
 @Service
 @FlowPreview
 class UserInteractionServiceImpl(
-    private val statsService: StatsService,
+    private val statsService: List<StatsService>,
     private val operations: List<UserInteractionOperations>
 ) : UserInteractionService {
     override suspend fun postForEvent(event: Event) {
-        val stats = statsService.calculateEventStats(event)
+        val stats = getStats(event)
 
         log.info { "Notifying of an event: $event with stats $stats" }
         operations.forEach {
@@ -37,7 +38,7 @@ class UserInteractionServiceImpl(
     }
 
     override suspend fun updateForEvent(event: Event) {
-        val stats = statsService.calculateEventStats(event)
+        val stats = getStats(event)
         log.info { "Updating notifications or event $event with new stats $stats" }
         operations.forEach {
             it.updateForEvent(event, stats)
@@ -57,11 +58,12 @@ class UserInteractionServiceImpl(
         }
     }
 
-    override fun deletionFlow(): Flow<EventId> {
-        return operations.asFlow().flatMapMerge { it.deletionFlow() }
-    }
+    override fun deletionFlow(): Flow<EventId> =
+        operations.asFlow().flatMapMerge { it.deletionFlow() }
 
-    override fun exportFlow(): Flow<ConfigId> {
-        return operations.asFlow().flatMapMerge { it.exportFlow() }
-    }
+    override fun exportFlow(): Flow<ConfigId> =
+        operations.asFlow().flatMapMerge { it.exportFlow() }
+
+    private suspend fun getStats(event: Event): List<EventStats> =
+        statsService.mapNotNull { it.calculate(event) }
 }

@@ -3,27 +3,21 @@ package com.github.smaugfm.power.tracker.stats
 import com.github.smaugfm.power.tracker.Event
 import com.github.smaugfm.power.tracker.EventType
 import com.github.smaugfm.power.tracker.events.EventsService
-import kotlinx.coroutines.FlowPreview
+import org.springframework.core.annotation.Order
 import org.springframework.stereotype.Service
 
 @Service
-@FlowPreview
-class StatsServiceImpl(
-    private val service: EventsService
-) : StatsService {
-    override suspend fun calculateEventStats(event: Event): List<EventStats> {
-        return singleEventStats(event) + summaryEventStats(event)
-    }
+@Order(1)
+class SingleEventStatsService(private val service: EventsService) : StatsService {
 
-    private suspend fun singleEventStats(event: Event): List<EventStats.Single> {
+    override suspend fun calculate(event: Event): EventStats.Single? {
         val singleEventStats = when (event.type) {
             EventType.POWER -> getLastInverseStats(event)
-            EventType.ISP -> if (event.state) getLastInverseStats(event) else getIspDownStats(
-                event
-            )
-        } ?: return emptyList()
+            EventType.ISP ->
+                if (event.state) getLastInverseStats(event) else getIspDownStats(event)
+        } ?: return null
 
-        return listOf(singleEventStats)
+        return singleEventStats
     }
 
     private suspend fun getIspDownStats(event: Event): EventStats.Single? {
@@ -55,12 +49,5 @@ class StatsServiceImpl(
     private suspend fun getLastInverseStats(event: Event): EventStats.Single.LastInverseOnly? {
         val prev = service.findPreviousOfSameType(event) ?: return null
         return EventStats.Single.LastInverseOnly(event.state, event.type, event.since(prev))
-    }
-
-    private fun summaryEventStats(
-        event: Event
-    ): List<EventStats.Summary> {
-        //TODO
-        return emptyList()
     }
 }
