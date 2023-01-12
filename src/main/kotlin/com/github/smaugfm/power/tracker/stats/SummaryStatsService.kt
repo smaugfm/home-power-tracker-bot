@@ -17,10 +17,10 @@ import kotlin.math.roundToLong
 @Service
 @Order(2)
 class SummaryStatsService(private val service: EventsService) : StatsService {
-    override suspend fun calculate(event: Event): EventStats.Summary? {
-        val period = determinePeriodForEvent(event) ?: return null
-        return calculateForPeriod(event.configId, event.type, event.time, period)
-    }
+    override suspend fun calculate(event: Event): List<EventStats.Summary> =
+        determinePeriodForEvent(event).mapNotNull { (period, to) ->
+            calculateForPeriod(event.configId, event.type, to.toInstant(), period)
+        }
 
     suspend fun calculateForPeriod(
         configId: ConfigId,
@@ -114,38 +114,39 @@ class SummaryStatsService(private val service: EventsService) : StatsService {
             )
     }.toList()
 
-    private suspend fun determinePeriodForEvent(event: Event): SummaryStatsPeriod? {
+    suspend fun determinePeriodForEvent(event: Event): List<Pair<SummaryStatsPeriod, ZonedDateTime>> {
+        val result = mutableListOf<Pair<SummaryStatsPeriod, ZonedDateTime>>()
         val previous = service.findPreviousOfSameType(event)
-            ?.time?.atZone(ZoneId.systemDefault()) ?: return null
+            ?.time?.atZone(ZoneId.systemDefault()) ?: return result
         val zoned = event.time.atZone(ZoneId.systemDefault())
 
-        val startOfYear = getStartOfLastPeriod(SummaryStatsPeriod.Year, event.time)
-        if (previous < startOfYear && startOfYear < zoned) {
-            return SummaryStatsPeriod.Year
+        val startOfYear = getStartOfLastPeriod(SummaryStatsPeriod.LastYear, event.time)
+        if (previous < startOfYear && startOfYear <= zoned) {
+            result.add(Pair(SummaryStatsPeriod.LastYear, startOfYear))
         }
 
-        val startOfMonth = getStartOfLastPeriod(SummaryStatsPeriod.Month, event.time)
-        if (previous < startOfMonth && startOfMonth < zoned) {
-            return SummaryStatsPeriod.Year
+        val startOfMonth = getStartOfLastPeriod(SummaryStatsPeriod.LastMonth, event.time)
+        if (previous < startOfMonth && startOfMonth <= zoned) {
+            result.add(Pair(SummaryStatsPeriod.LastMonth, startOfMonth))
         }
 
-        val startOfWeek = getStartOfLastPeriod(SummaryStatsPeriod.Week, event.time)
-        if (previous < startOfWeek && startOfWeek < zoned) {
-            return SummaryStatsPeriod.Year
+        val startOfWeek = getStartOfLastPeriod(SummaryStatsPeriod.LastWeek, event.time)
+        if (previous < startOfWeek && startOfWeek <= zoned) {
+            result.add(Pair(SummaryStatsPeriod.LastWeek, startOfWeek))
         }
 
-        return null
+        return result
     }
 
-    private fun getStartOfLastPeriod(period: SummaryStatsPeriod, from: Instant): ZonedDateTime {
-        val zoned = from.atZone(ZoneId.systemDefault())
+    private fun getStartOfLastPeriod(period: SummaryStatsPeriod, to: Instant): ZonedDateTime {
+        val zoned = to.atZone(ZoneId.systemDefault())
         return when (period) {
-            is SummaryStatsPeriod.Custom -> zoned.minusDays(period.days.toLong())
+            is SummaryStatsPeriod.Custom -> zoned.minusDays(period.lastDays.toLong())
                 .truncatedTo(ChronoUnit.DAYS)
 
-            SummaryStatsPeriod.Month -> zoned.withDayOfMonth(1).truncatedTo(ChronoUnit.DAYS)
-            SummaryStatsPeriod.Week -> zoned.with(ChronoField.DAY_OF_WEEK, 1).truncatedTo(ChronoUnit.DAYS)
-            SummaryStatsPeriod.Year -> zoned.withDayOfYear(1).truncatedTo(ChronoUnit.DAYS)
+            SummaryStatsPeriod.LastMonth -> zoned.withDayOfMonth(1).truncatedTo(ChronoUnit.DAYS)
+            SummaryStatsPeriod.LastWeek -> zoned.with(ChronoField.DAY_OF_WEEK, 1).truncatedTo(ChronoUnit.DAYS)
+            SummaryStatsPeriod.LastYear -> zoned.withDayOfYear(1).truncatedTo(ChronoUnit.DAYS)
         }
     }
 }

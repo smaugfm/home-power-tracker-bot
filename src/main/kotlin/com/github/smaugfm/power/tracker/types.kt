@@ -33,10 +33,10 @@ data class Config(
 )
 
 sealed class SummaryStatsPeriod {
-    object Week : SummaryStatsPeriod()
-    object Month : SummaryStatsPeriod()
-    object Year : SummaryStatsPeriod()
-    data class Custom(val days: Int) : SummaryStatsPeriod()
+    object LastWeek : SummaryStatsPeriod()
+    object LastMonth : SummaryStatsPeriod()
+    object LastYear : SummaryStatsPeriod()
+    data class Custom(val lastDays: Int) : SummaryStatsPeriod()
 }
 
 data class PeriodicStats(

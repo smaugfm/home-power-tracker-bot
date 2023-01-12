@@ -1,12 +1,11 @@
 package com.github.smaugfm.power.tracker.stats
 
 import assertk.assertThat
-import assertk.assertions.isBetween
-import assertk.assertions.isEqualTo
+import assertk.assertions.*
+import com.github.smaugfm.power.tracker.Event
 import com.github.smaugfm.power.tracker.EventType
 import com.github.smaugfm.power.tracker.RepositoryTestBase
 import com.github.smaugfm.power.tracker.SummaryStatsPeriod
-import com.github.smaugfm.power.tracker.events.EventsService
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -18,7 +17,43 @@ class SummaryStatsServiceTest : RepositoryTestBase() {
     private lateinit var service: SummaryStatsService
 
     @Test
-    fun test() {
+    fun determinePeriodForEventTest_1() {
+        val configId = saveConfig1().id
+
+        insertEventWithTime(configId, "2022-12-01 00:00:00 Europe/Kiev")
+        val (year, month) = getPeriods(configId, "2023-01-01T12:00:00.000+02:00")
+        assertThat(year.first).isInstanceOf(SummaryStatsPeriod.LastYear::class)
+        assertThat(month.first).isInstanceOf(SummaryStatsPeriod.LastMonth::class)
+        assertThat(year.second).assertThat(
+            OffsetDateTime.parse("2022-01-01T00:00:00.000+02:00").toInstant(),
+        )
+        assertThat(month.second).assertThat(
+            OffsetDateTime.parse("2022-01-01T00:00:00.000+02:00").toInstant(),
+        )
+    }
+
+    @Test
+    fun determinePeriodForEventTest_2() {
+        val configId = saveConfig1().id
+
+        insertEventWithTime(configId, "2021-12-29 00:00:00 Europe/Kiev")
+        assertThat(getPeriods(configId, "2021-12-31T23:59:59.999+02:00")).isEmpty()
+    }
+
+    @Test
+    fun determinePeriodForEventTest_4() {
+        val configId = saveConfig1().id
+
+        insertEventWithTime(configId, "2023-01-31 23:59:59 Europe/Kiev")
+        val (period, to) = getPeriods(configId, "2023-02-06T00:00:00.000+02:00")
+        assertThat(period).isInstanceOf(SummaryStatsPeriod.LastMonth::class)
+        assertThat(to).assertThat(
+            OffsetDateTime.parse("2023-01-02T00:00:00.000+02:00").toInstant(),
+        )
+    }
+
+    @Test
+    fun calculateForPeriodTest() {
         val configId = saveConfig1().id
 
         db.sql(
@@ -41,7 +76,7 @@ class SummaryStatsServiceTest : RepositoryTestBase() {
                 configId,
                 EventType.POWER,
                 OffsetDateTime.parse("2022-12-02T12:00:00.000+02:00").toInstant(),
-                SummaryStatsPeriod.Month
+                SummaryStatsPeriod.LastMonth
             )
         }!!) {
             assertThat(upTotal).isEqualTo(Duration.ofHours(16))
@@ -59,5 +94,27 @@ class SummaryStatsServiceTest : RepositoryTestBase() {
                 assertThat(medianPeriod).isEqualTo(Duration.ofHours(10))
             }
         }
+    }
+
+    private fun getPeriods(configId: Long, time: String) =
+        runBlocking {
+            service.determinePeriodForEvent(
+                Event(
+                    2,
+                    false,
+                    EventType.POWER,
+                    configId,
+                    OffsetDateTime.parse(time).toInstant(),
+                )
+            )
+        }
+
+    private fun insertEventWithTime(configId: Long, time: String) {
+        db.sql(
+            """
+                insert into tb_events(config_id, type, state, created)
+                    values (${configId}, 'POWER', true, '${time}');
+                """.trimIndent()
+        ).then().block()
     }
 }

@@ -10,14 +10,14 @@ import org.springframework.stereotype.Service
 @Order(1)
 class SingleEventStatsService(private val service: EventsService) : StatsService {
 
-    override suspend fun calculate(event: Event): EventStats.Single? {
+    override suspend fun calculate(event: Event): List<EventStats.Single> {
         val singleEventStats = when (event.type) {
             EventType.POWER -> getLastInverseStats(event)
             EventType.ISP ->
                 if (event.state) getLastInverseStats(event) else getIspDownStats(event)
-        } ?: return null
+        } ?: return emptyList()
 
-        return singleEventStats
+        return listOf(singleEventStats)
     }
 
     private suspend fun getIspDownStats(event: Event): EventStats.Single? {

@@ -81,7 +81,7 @@ class UserInteractionServiceImpl(
         operations.asFlow().flatMapMerge { it.inner() }
 
     private suspend fun getStats(event: Event): List<EventStats> =
-        statsService.mapNotNull { it.calculate(event) }
+        statsService.flatMap { it.calculate(event) }
 
     @Suppress("UNCHECKED_CAST", "USELESS_CAST")
     private inline fun <reified T : UserInteractionData> operationsByUserData(
