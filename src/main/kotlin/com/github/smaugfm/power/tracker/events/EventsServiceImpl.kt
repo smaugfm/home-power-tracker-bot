@@ -20,7 +20,7 @@ class EventsServiceImpl(
 ) : EventsService {
 
     override suspend fun findAllEvents(configId: ConfigId): Flow<Event> =
-        eventsRepository.findAllByConfigId(configId)
+        eventsRepository.findAllByConfigIdOrderByCreatedDesc(configId)
             .mapFluxDto()
 
     override suspend fun getEvent(eventId: EventId): Event? =
@@ -47,7 +47,7 @@ class EventsServiceImpl(
         from: Instant,
         to: Instant
     ): Flow<Event> =
-        eventsRepository.findAllByConfigIdAndTypeAndCreatedBetween(
+        eventsRepository.findAllByConfigIdAndTypeAndCreatedBetweenOrderByCreatedAsc(
             configId,
             type,
             from,

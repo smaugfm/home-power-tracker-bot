@@ -38,6 +38,9 @@ class TelegramBotConfiguration {
     @Bean
     fun exportCommandMessagesChannel(): Channel<CommonMessage<MessageContent>> = Channel()
 
+    @Bean
+    fun statsCommandMessagesChannel(): Channel<CommonMessage<MessageContent>> = Channel()
+
     @RiskFeature
     @Bean
     fun startBotJob(
@@ -45,11 +48,17 @@ class TelegramBotConfiguration {
         @Qualifier("replyMessagesChannel")
         replyMessagesChannel: Channel<CommonMessage<MessageContent>>,
         @Qualifier("exportCommandMessagesChannel")
-        exportCommandMessagesChannel: Channel<CommonMessage<MessageContent>>
+        exportCommandMessagesChannel: Channel<CommonMessage<MessageContent>>,
+        @Qualifier("statsCommandMessagesChannel")
+        statsCommandMessagesChannel: Channel<CommonMessage<MessageContent>>,
     ): LaunchCoroutineBean =
         object : LaunchCoroutineBean {
             override suspend fun launch(scope: CoroutineScope) {
                 val job = bot.buildBehaviourWithLongPolling(scope = scope) {
+                    onCommand("stats") {
+                        log.info { "Received Telegram /stats command: $it" }
+                        statsCommandMessagesChannel.send(it)
+                    }
                     onCommand("export") {
                         log.info { "Received Telegram /export command: $it" }
                         exportCommandMessagesChannel.send(it)

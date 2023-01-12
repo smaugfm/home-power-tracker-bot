@@ -15,7 +15,7 @@ interface EventsRepository : R2dbcRepository<EventEntity, Long> {
         eventType: EventType
     ): Mono<EventEntity>
 
-    fun findAllByConfigId(configId: Long): Flux<EventEntity>
+    fun findAllByConfigIdOrderByCreatedDesc(configId: Long): Flux<EventEntity>
 
     @Query(
         "select * from tb_events " +
@@ -32,7 +32,7 @@ interface EventsRepository : R2dbcRepository<EventEntity, Long> {
         type: EventType?,
     ): Mono<EventEntity>
 
-    fun findAllByConfigIdAndTypeAndCreatedBetween(
+    fun findAllByConfigIdAndTypeAndCreatedBetweenOrderByCreatedAsc(
         configId: Long,
         type: EventType,
         from: Instant,

@@ -4,6 +4,7 @@ import assertk.assertThat
 import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
 import assertk.assertions.isFalse
+import assertk.assertions.isNull
 import com.github.smaugfm.power.tracker.RepositoryTestBase
 import com.github.smaugfm.power.tracker.EventType
 import com.github.smaugfm.power.tracker.events.EventsService
@@ -16,7 +17,7 @@ import java.time.Duration
 class StatsServiceImplTest : RepositoryTestBase() {
 
     @Autowired
-    private lateinit var service: StatsService
+    private lateinit var service: SingleEventStatsService
 
     @Autowired
     private lateinit var eventsService: EventsService
@@ -43,23 +44,23 @@ class StatsServiceImplTest : RepositoryTestBase() {
         val get = { i: Int -> events[i - 1] }
 
         assertThat(runBlocking {
-            service.calculate(get(1)).toList()
-        }).isEmpty()
+            service.calculate(get(1))
+        }).isNull()
 
         assertThat(runBlocking {
-            service.calculate(get(2)).toList()
-        }).isEmpty()
+            service.calculate(get(2))
+        }).isNull()
 
         val powerDown = runBlocking {
-            service.calculate(get(3)).toList()
-        }[0] as EventStats.Single.LastInverseOnly
+            service.calculate(get(3))
+        } as EventStats.Single.LastInverseOnly
         assertThat(powerDown.state).isFalse()
         assertThat(powerDown.type).isEqualTo(EventType.POWER)
         assertThat(powerDown.lastInverse).isEqualTo(Duration.ofDays(1))
 
         val ispDown = runBlocking {
-            service.calculate(get(4)).toList()
-        }[0] as EventStats.Single.IspDownStats
+            service.calculate(get(4))
+        } as EventStats.Single.IspDownStats
         assertThat(ispDown.state).isFalse()
         assertThat(ispDown.type).isEqualTo(EventType.ISP)
         assertThat(ispDown.lastInverse).isEqualTo(Duration.ofDays(4).plusHours(4))

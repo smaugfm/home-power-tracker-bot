@@ -1,8 +1,8 @@
 package com.github.smaugfm.power.tracker.integration
 
-import com.github.smaugfm.power.tracker.ConfigId
 import com.github.smaugfm.power.tracker.Event
-import com.github.smaugfm.power.tracker.EventId
+import com.github.smaugfm.power.tracker.EventDeletionRequest
+import com.github.smaugfm.power.tracker.UserInteractionData
 import com.github.smaugfm.power.tracker.interaction.UserInteractionOperations
 import com.github.smaugfm.power.tracker.stats.EventStats
 import kotlinx.coroutines.channels.Channel
@@ -14,12 +14,12 @@ import java.time.Duration
 
 val log = KotlinLogging.logger { }
 
-class TestUserInteractionOperations : UserInteractionOperations {
+class TestUserInteractionOperations : UserInteractionOperations<UserInteractionData> {
     override suspend fun postForEvent(event: Event, stats: List<EventStats>) {
         log.info { "EVENT: $event, stats: $stats" }
     }
 
-    val deletionChannel = Channel<EventId>()
+    val deletionChannel = Channel<EventDeletionRequest<UserInteractionData>>()
 
     override suspend fun updateForEvent(event: Event, stats: List<EventStats>) {
         log.info { "UPDATE FOR EVENT: $event, stats: $stats" }
@@ -29,7 +29,11 @@ class TestUserInteractionOperations : UserInteractionOperations {
         log.info { "DELETE FOR EVENT: $event" }
     }
 
-    override suspend fun postExport(configId: ConfigId, events: Flow<Event>) {
+    override suspend fun postStats(data: UserInteractionData, stats: EventStats.Summary) {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun postExport(data: UserInteractionData, events: Flow<Event>) {
         TODO("Not yet implemented")
     }
 
@@ -37,11 +41,15 @@ class TestUserInteractionOperations : UserInteractionOperations {
         log.info { "NETWORK UNSTABLE for $duration" }
     }
 
-    override fun deletionFlow(): Flow<EventId> =
+    override fun deletionFlow(): Flow<EventDeletionRequest<UserInteractionData>> =
         deletionChannel.consumeAsFlow()
 
-    override fun exportFlow(): Flow<ConfigId> {
+    override fun exportFlow(): Flow<UserInteractionData> {
         return emptyFlow()
+    }
+
+    override fun statsFlow(): Flow<UserInteractionData> {
+        TODO("Not yet implemented")
     }
 
 }

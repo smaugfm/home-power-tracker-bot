@@ -90,25 +90,28 @@ class SummaryStatsService(private val service: EventsService) : StatsService {
         start: Instant,
         to: Instant
     ) = eventsFlow.toMutableList().also { list ->
-        list.add(
-            0, Event(
-                0,
-                !list[0].state,
-                list[0].type,
-                list[0].configId,
-                start
+        val first = list.first()
+        if (first.time != start)
+            list.add(
+                0, Event(
+                    0,
+                    !first.state,
+                    first.type,
+                    first.configId,
+                    start
+                )
             )
-        )
         val curLast = list.last()
-        list.add(
-            Event(
-                0,
-                !curLast.state,
-                curLast.type,
-                curLast.configId,
-                to
+        if (curLast.time != to)
+            list.add(
+                Event(
+                    0,
+                    !curLast.state,
+                    curLast.type,
+                    curLast.configId,
+                    to
+                )
             )
-        )
     }.toList()
 
     private suspend fun determinePeriodForEvent(event: Event): SummaryStatsPeriod? {

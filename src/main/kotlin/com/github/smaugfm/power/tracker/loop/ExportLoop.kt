@@ -12,8 +12,11 @@ class ExportLoop(
     private val events: EventsService,
 ) : LaunchCoroutineBean {
     override suspend fun launch(scope: CoroutineScope) {
-        userInteraction.exportFlow().collect { configId ->
-            userInteraction.exportEvents(configId, events.findAllEvents(configId))
+        userInteraction.exportFlow().collect { userInteractionData ->
+            userInteraction.exportEvents(
+                userInteractionData,
+                events.findAllEvents(userInteractionData.configId)
+            )
         }
     }
 }

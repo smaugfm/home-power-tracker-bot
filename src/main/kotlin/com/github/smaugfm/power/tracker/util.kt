@@ -13,3 +13,8 @@ fun List<Long>.median(): Double {
         (sorted[sorted.size / 2]).toDouble()
     }
 }
+
+inline fun <T : Any> T?.ifNull(action: () -> Unit) = this.also {
+    if (it == null)
+        action()
+}

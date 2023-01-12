@@ -1,8 +1,7 @@
 package com.github.smaugfm.power.tracker.interaction.telegram
 
-import com.github.smaugfm.power.tracker.ConfigId
-import com.github.smaugfm.power.tracker.Event
-import com.github.smaugfm.power.tracker.EventId
+import com.github.smaugfm.power.tracker.*
+import com.github.smaugfm.power.tracker.UserInteractionData.TelegramUserInteractionData
 import com.github.smaugfm.power.tracker.interaction.UserInteractionOperations
 import com.github.smaugfm.power.tracker.persistence.TelegramChatIdsRepository
 import com.github.smaugfm.power.tracker.persistence.TelegramMessageEntity
@@ -20,12 +19,7 @@ import dev.inmo.tgbotapi.types.message.content.MessageContent
 import dev.inmo.tgbotapi.utils.RiskFeature
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.ReceiveChannel
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.consumeAsFlow
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapNotNull
-import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import mu.KotlinLogging
@@ -36,6 +30,7 @@ import java.time.Duration
 
 private val log = KotlinLogging.logger { }
 
+@RiskFeature
 @Profile("!test")
 @Component
 @FlowPreview
@@ -47,8 +42,10 @@ class TelegramUserInteractionOperations(
     @Qualifier("replyMessagesChannel")
     private val replyMessagesChannel: ReceiveChannel<CommonMessage<MessageContent>>,
     @Qualifier("exportCommandMessagesChannel")
-    private val exportCommandMessagesChannel: ReceiveChannel<CommonMessage<MessageContent>>
-) : UserInteractionOperations {
+    private val exportCommandMessagesChannel: ReceiveChannel<CommonMessage<MessageContent>>,
+    @Qualifier("statsCommandMessagesChannel")
+    private val statsCommandMessagesChannel: ReceiveChannel<CommonMessage<MessageContent>>,
+) : UserInteractionOperations<TelegramUserInteractionData> {
     override suspend fun postForEvent(event: Event, stats: List<EventStats>) {
         val text = formatter.getTelegramMessage(stats)
 
@@ -134,8 +131,13 @@ class TelegramUserInteractionOperations(
             .collect()
     }
 
-    override suspend fun postExport(configId: ConfigId, events: Flow<Event>) {
+    override suspend fun postExport(data: TelegramUserInteractionData, events: Flow<Event>) {
         log.warn { "TODO: EXPORT NOT IMPLEMENTED" }
+    }
+
+    override suspend fun postStats(data: TelegramUserInteractionData, stats: EventStats.Summary) {
+        val text = formatter.getTelegramMessage(listOf(stats))
+        bot.sendTextMessage(ChatId(data.telegramChatId), text, MarkdownV2ParseMode)
     }
 
     override suspend fun postUnstableNetworkTimeout(duration: Duration) {
@@ -155,32 +157,70 @@ class TelegramUserInteractionOperations(
     }
 
     @RiskFeature
-    override fun deletionFlow(): Flow<EventId> =
+    override fun deletionFlow(): Flow<EventDeletionRequest<TelegramUserInteractionData>> =
         replyMessagesChannel
             .consumeAsFlow()
             .mapNotNull { message ->
-                message.replyTo?.messageId?.let {
+                val chatId = getChatIdFromReply(message) ?: return@mapNotNull null
+                val configId = getConfigId(chatId, message.messageId) ?: return@mapNotNull null
+                val messageEntity = message.replyTo?.messageId?.let {
                     messagesRepository
                         .findByMessageIdAndChatId(it, message.chat.id.chatId)
                         .awaitSingleOrNull()
-                }.also {
-                    if (it == null)
-                        log.warn {
-                            "User chatId=${message.chat.id.chatId} replied to " +
-                                    "messageId=${message.replyTo?.messageId} without an attached event."
-                        }
-                }
-            }.map {
-                it.eventId
+                }.ifNull {
+                    log.warn {
+                        "User chatId=${message.chat.id.chatId} replied to " +
+                                "messageId=${message.replyTo?.messageId} without an attached event."
+                    }
+                } ?: return@mapNotNull null
+
+                EventDeletionRequest(
+                    TelegramUserInteractionData(
+                        configId,
+                        message.messageId,
+                        chatId
+                    ),
+                    messageEntity.eventId
+                )
             }
 
-    @RiskFeature
-    override fun exportFlow(): Flow<ConfigId> =
-        exportCommandMessagesChannel
+    override fun exportFlow() =
+        messagesToUserInteractionData(exportCommandMessagesChannel)
+
+    override fun statsFlow() =
+        messagesToUserInteractionData(statsCommandMessagesChannel)
+
+    private fun messagesToUserInteractionData(
+        channel: ReceiveChannel<CommonMessage<MessageContent>>
+    ): Flow<TelegramUserInteractionData> =
+        channel
             .consumeAsFlow()
-            .mapNotNull {
-                val id = it.from?.id?.chatId ?: return@mapNotNull null
+            .mapNotNull { message ->
+                val chatId = getChatId(message) ?: return@mapNotNull null
+                val configId = getConfigId(chatId, message.messageId) ?: return@mapNotNull null
 
-                chatIdRepository.findById(id).awaitSingleOrNull()?.configId
+                TelegramUserInteractionData(
+                    configId,
+                    message.messageId,
+                    chatId
+                )
             }
+
+    private suspend fun getChatId(message: CommonMessage<MessageContent>): Long? =
+        message.from?.id?.chatId.ifNull {
+            log.warn { "Not chatId in messageId=${message.messageId}" }
+        }
+
+    private suspend fun getChatIdFromReply(message: CommonMessage<MessageContent>): Long? =
+        message.replyTo?.chat?.id?.chatId.ifNull {
+            log.warn { "Not chatId in messageId=${message.messageId}" }
+        }
+
+    private suspend fun getConfigId(chatId: Long, messageId: Long): Long? =
+        chatIdRepository.findById(chatId).awaitSingleOrNull()?.configId.ifNull {
+            log.warn {
+                "User chatId=${chatId} sent messageId=${messageId}" +
+                        "but not chatId was found in the DB"
+            }
+        }
 }

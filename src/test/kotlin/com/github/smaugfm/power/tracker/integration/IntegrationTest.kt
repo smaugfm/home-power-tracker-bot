@@ -1,18 +1,14 @@
 package com.github.smaugfm.power.tracker.integration
 
 import com.github.smaugfm.power.tracker.Application
+import com.github.smaugfm.power.tracker.EventDeletionRequest
 import com.github.smaugfm.power.tracker.RepositoryTestBase
+import com.github.smaugfm.power.tracker.UserInteractionData
 import com.github.smaugfm.power.tracker.interaction.UserInteractionService
 import com.github.smaugfm.power.tracker.network.NetworkStabilityServiceImpl
 import com.github.smaugfm.power.tracker.network.Ping
 import com.github.smaugfm.power.tracker.spring.NetworkStabilityProperties
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.*
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
@@ -97,7 +93,12 @@ class IntegrationTest : RepositoryTestBase() {
         Thread.sleep(1000)
 
         runBlocking {
-            userInteractionOperations.deletionChannel.send(1)
+            userInteractionOperations.deletionChannel.send(
+                EventDeletionRequest(
+                    UserInteractionData.Noop(1),
+                    1
+                )
+            )
         }
         Thread.sleep(1000)
     }

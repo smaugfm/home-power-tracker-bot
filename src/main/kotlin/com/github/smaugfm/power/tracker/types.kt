@@ -49,3 +49,20 @@ data class PeriodicStats(
 interface LastInverseStats {
     val lastInverse: Duration
 }
+
+sealed class UserInteractionData(
+    open val configId: ConfigId
+) {
+    data class TelegramUserInteractionData(
+        override val configId: ConfigId,
+        val messageId: Long,
+        val telegramChatId: Long,
+    ) : UserInteractionData(configId)
+
+    data class Noop(override val configId: ConfigId) : UserInteractionData(configId)
+}
+
+data class EventDeletionRequest<T : UserInteractionData>(
+    val data: T,
+    val eventId: EventId
+)
