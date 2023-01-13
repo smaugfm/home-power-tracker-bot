@@ -56,7 +56,7 @@ class TelegramUserInteractionOperations(
                 try {
                     val msg = bot.sendTextMessage(
                         ChatId(it.chatId),
-                        TelegramMarkdownV2Format.escape(text),
+                        text,
                         MarkdownV2ParseMode
                     )
                     messagesRepository.save(
@@ -91,7 +91,7 @@ class TelegramUserInteractionOperations(
                     bot.editMessageText(
                         ChatId(messageEntity.chatId),
                         messageEntity.messageId,
-                        TelegramMarkdownV2Format.escape(newText),
+                        newText,
                         MarkdownV2ParseMode
                     )
                     log.info {

@@ -1,12 +1,12 @@
 package com.github.smaugfm.power.tracker.interaction.telegram
 
-object TelegramMarkdownV2Format {
+object Fmt {
     private fun escapeInternal(text: String, escapeChars: String): String {
-        return text.replace(Regex("[$escapeChars\\\\]"), "\\$0")
+        return text.replace(Regex("[$escapeChars\\\\]"), "\\\\$0")
     }
 
     fun escape(text: String): String {
-        return text.replace(Regex("[_*\\[\\]()~`>#+\\-=|{}.!]"), "\\$0")
+        return text.replace(Regex("[_*\\[\\]()~`>#+\\-=|{}.!]"), "\\\\$0")
     }
 
     fun bold(text: String) = "*${text}*"

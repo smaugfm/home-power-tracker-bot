@@ -20,7 +20,7 @@ class StatsLoop(
                 userInteractionData.configId,
                 EventType.POWER,
                 Instant.now(),
-                SummaryStatsPeriod.LastMonth
+                SummaryStatsPeriod.Custom(10)
             ) ?: return@collect
 
             userInteraction.postStats(
