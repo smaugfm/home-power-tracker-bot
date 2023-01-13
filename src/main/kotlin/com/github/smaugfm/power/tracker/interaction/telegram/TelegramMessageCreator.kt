@@ -85,6 +85,7 @@ class TelegramMessageCreator {
             EventType.ISP -> "працював"
         }
 
+        sb.append("Кількість відключень: ${stats.turnOffCount}\n\n")
         sb.append("Скільки часу всього $was: ${stats.upTotal.humanReadable()}\n")
         sb.append("Скільки часу всього не $was: ${stats.downTotal.humanReadable()}\n\n")
 

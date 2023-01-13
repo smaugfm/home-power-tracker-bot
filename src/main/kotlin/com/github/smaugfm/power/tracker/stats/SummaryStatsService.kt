@@ -51,6 +51,7 @@ class SummaryStatsService(private val service: EventsService) : StatsService {
         return EventStats.Summary(
             events.first().type,
             period,
+            turnOffCount = rawEvents.count { !it.state },
             upTotal = upTotal,
             downTotal = stateTotal(zipped, false),
             upPercent = upTotal.toMillis().toDouble() / Duration.between(start, to).toMillis() * 100,

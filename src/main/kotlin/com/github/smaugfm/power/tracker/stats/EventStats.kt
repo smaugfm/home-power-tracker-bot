@@ -30,6 +30,7 @@ sealed class EventStats(
     data class Summary(
         override val type: EventType,
         val period: SummaryStatsPeriod,
+        val turnOffCount: Int,
         val upTotal: Duration,
         val downTotal: Duration,
         val upPercent: Double,
