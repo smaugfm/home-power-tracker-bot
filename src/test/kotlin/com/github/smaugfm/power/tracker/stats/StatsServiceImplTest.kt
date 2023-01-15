@@ -1,6 +1,7 @@
 package com.github.smaugfm.power.tracker.stats
 
 import assertk.assertThat
+import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
 import assertk.assertions.isFalse
 import assertk.assertions.isNull
@@ -31,7 +32,7 @@ class StatsServiceImplTest : RepositoryTestBase() {
             insert into tb_events(config_id, type, state, created, id)
                 values (${configId}, 'ISP', true, '2022-12-25 00:00:00 Europe/Kiev', 1);
             insert into tb_events(config_id, type, state, created, id) 
-                values (${configId}, 'POWER', true, '2022-12-25 00:00:00 Europe/Kiev', 2);
+                values (${configId}, 'POWER', true, '2022-12-25 00:01:00 Europe/Kiev', 2);
             insert into tb_events(config_id, type, state, created, id) 
                 values (${configId}, 'POWER', false , '2022-12-26 00:00:00 Europe/Kiev', 3);
             insert into tb_events(config_id, type, state, created, id)
@@ -45,26 +46,26 @@ class StatsServiceImplTest : RepositoryTestBase() {
 
         assertThat(runBlocking {
             service.calculate(get(1))
-        }).isNull()
+        }).isEmpty()
 
         assertThat(runBlocking {
             service.calculate(get(2))
-        }).isNull()
+        }).isEmpty()
 
         val powerDown = runBlocking {
             service.calculate(get(3))
-        } as EventStats.Single.LastInverseOnly
+        }[0] as EventStats.Single.LastInverseOnly
         assertThat(powerDown.state).isFalse()
         assertThat(powerDown.type).isEqualTo(EventType.POWER)
-        assertThat(powerDown.lastInverse).isEqualTo(Duration.ofDays(1))
+        assertThat(powerDown.lastInverse).isEqualTo(Duration.ofDays(1).minusMinutes(1))
 
         val ispDown = runBlocking {
             service.calculate(get(4))
-        } as EventStats.Single.IspDownStats
+        }[0] as EventStats.Single.IspDownStats
         assertThat(ispDown.state).isFalse()
         assertThat(ispDown.type).isEqualTo(EventType.ISP)
         assertThat(ispDown.lastInverse).isEqualTo(Duration.ofDays(4).plusHours(4))
-        assertThat(ispDown.lastUPSCharge).isEqualTo(Duration.ofDays(1))
+        assertThat(ispDown.lastUPSCharge).isEqualTo(Duration.ofDays(1).minusMinutes(1))
         assertThat(ispDown.lastUPSOperation).isEqualTo(Duration.ofDays(3).plusHours(4))
     }
 }

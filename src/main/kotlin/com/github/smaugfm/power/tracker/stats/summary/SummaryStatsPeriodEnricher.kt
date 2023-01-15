@@ -47,7 +47,7 @@ class SummaryStatsPeriodEnricher(private val service: EventsService) {
         )
     }
 
-    private suspend fun determinePeriodForEvent(event: Event): List<Pair<SummaryStatsPeriod, ZonedDateTime>> {
+    suspend fun determinePeriodForEvent(event: Event): List<Pair<SummaryStatsPeriod, ZonedDateTime>> {
         val result = mutableListOf<Pair<SummaryStatsPeriod, ZonedDateTime>>()
         val previous = service.findPreviousOfSameType(event)
             ?.time?.atZone(ZoneId.systemDefault()) ?: return result

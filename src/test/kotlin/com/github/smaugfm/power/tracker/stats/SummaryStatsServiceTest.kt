@@ -1,11 +1,15 @@
 package com.github.smaugfm.power.tracker.stats
 
 import assertk.assertThat
-import assertk.assertions.*
+import assertk.assertions.isBetween
+import assertk.assertions.isEmpty
+import assertk.assertions.isEqualTo
+import assertk.assertions.isInstanceOf
 import com.github.smaugfm.power.tracker.Event
 import com.github.smaugfm.power.tracker.EventType
 import com.github.smaugfm.power.tracker.RepositoryTestBase
 import com.github.smaugfm.power.tracker.SummaryStatsPeriod
+import com.github.smaugfm.power.tracker.stats.summary.SummaryStatsPeriodEnricher
 import com.github.smaugfm.power.tracker.stats.summary.SummaryStatsService
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
@@ -16,6 +20,9 @@ import java.time.OffsetDateTime
 class SummaryStatsServiceTest : RepositoryTestBase() {
     @Autowired
     private lateinit var service: SummaryStatsService
+
+    @Autowired
+    private lateinit var enricher: SummaryStatsPeriodEnricher
 
     @Test
     fun determinePeriodForEventTest_1() {
@@ -46,7 +53,7 @@ class SummaryStatsServiceTest : RepositoryTestBase() {
         val configId = saveConfig1().id
 
         insertEventWithTime(configId, "2023-01-31 23:59:59 Europe/Kiev")
-        val (period, to) = getPeriods(configId, "2023-02-06T00:00:00.000+02:00")
+        val (period, to) = getPeriods(configId, "2023-02-06T00:00:00.000+02:00")[0]
         assertThat(period).isInstanceOf(SummaryStatsPeriod.LastMonth::class)
         assertThat(to).assertThat(
             OffsetDateTime.parse("2023-01-02T00:00:00.000+02:00").toInstant(),
@@ -73,11 +80,13 @@ class SummaryStatsServiceTest : RepositoryTestBase() {
         ).then().block()
 
         with(runBlocking {
-            service.calculateForPeriod(
-                configId,
-                EventType.POWER,
-                OffsetDateTime.parse("2022-12-02T12:00:00.000+02:00").toInstant(),
-                SummaryStatsPeriod.LastMonth
+            service.calculateStats(
+                enricher.forPeriod(
+                    configId,
+                    EventType.POWER,
+                    SummaryStatsPeriod.LastMonth,
+                    OffsetDateTime.parse("2022-12-02T12:00:00.000+02:00").toInstant(),
+                )
             )
         }!!) {
             assertThat(upTotal).isEqualTo(Duration.ofHours(16))
@@ -99,7 +108,7 @@ class SummaryStatsServiceTest : RepositoryTestBase() {
 
     private fun getPeriods(configId: Long, time: String) =
         runBlocking {
-            service.determinePeriodForEvent(
+            enricher.determinePeriodForEvent(
                 Event(
                     2,
                     false,
