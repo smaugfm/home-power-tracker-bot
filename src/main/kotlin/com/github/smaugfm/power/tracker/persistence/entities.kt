@@ -18,6 +18,8 @@ data class ConfigEntity(
     val notifyPower: Boolean = true,
     @Column("notify_isp")
     val notifyIsp: Boolean = true,
+    @Column("yasno_group")
+    val yasnoGroup: Int = 1,
     @Id
     var id: Long = 0,
 )

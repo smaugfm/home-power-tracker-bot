@@ -2,6 +2,7 @@ package com.github.smaugfm.power.tracker.loop
 
 import com.github.smaugfm.power.tracker.EventType
 import com.github.smaugfm.power.tracker.SummaryStatsPeriod
+import com.github.smaugfm.power.tracker.config.ConfigService
 import com.github.smaugfm.power.tracker.interaction.UserInteractionService
 import com.github.smaugfm.power.tracker.spring.LaunchCoroutineBean
 import com.github.smaugfm.power.tracker.stats.image.ScheduleImageStatsService
@@ -14,6 +15,7 @@ import java.time.Instant
 @Component
 class StatsLoop(
     private val userInteraction: UserInteractionService,
+    private val configService: ConfigService,
     private val summaryStatsService: SummaryStatsService,
     private val scheduleImageStatsService: ScheduleImageStatsService,
     private val periodEnricher: SummaryStatsPeriodEnricher
@@ -30,11 +32,14 @@ class StatsLoop(
 
             val stats = summaryStatsService
                 .calculateStats(enrichedPeriod) ?: return@collect
-            val image = scheduleImageStatsService.getImage(enrichedPeriod)
+            val image = scheduleImageStatsService.getImage(
+                userInteractionData.configId,
+                enrichedPeriod
+            )
 
             userInteraction.postStats(
                 userInteractionData,
-                listOf(stats, image)
+                listOfNotNull(stats, image)
             )
         }
     }

@@ -1,6 +1,7 @@
 package com.github.smaugfm.power.tracker.stats.image
 
 import com.github.smaugfm.power.tracker.*
+import com.github.smaugfm.power.tracker.config.ConfigService
 import com.github.smaugfm.power.tracker.stats.EventStats
 import com.github.smaugfm.power.tracker.stats.EventStats.LastWeekPowerScheduleImage
 import com.github.smaugfm.power.tracker.stats.StatsService
@@ -14,6 +15,7 @@ import java.time.ZoneId
 @Service
 class ScheduleImageStatsService(
     private val scheduleImageGenerator: YasnoScheduleImageGenerator,
+    private val configService: ConfigService,
     private val periodEnricher: SummaryStatsPeriodEnricher
 ) : StatsService {
     override suspend fun calculate(event: Event): List<EventStats> {
@@ -21,15 +23,20 @@ class ScheduleImageStatsService(
 
         return periodEnricher.forEvent(event) {
             it == SummaryStatsPeriod.LastWeek
-        }.map {
-            getImage(it)
+        }.mapNotNull {
+            getImage(event.configId, it)
         }
     }
 
-    suspend fun getImage(enrichedPeriod: EnrichedSummaryStatsPeriod): LastWeekPowerScheduleImage {
+    suspend fun getImage(
+        configId: ConfigId,
+        enrichedPeriod: EnrichedSummaryStatsPeriod
+    ): LastWeekPowerScheduleImage? {
         val hours = calculateOutageHours(enrichedPeriod)
+        val yasnoGroup = configService.getYasnoGroup(configId) ?: return null
+
         val bytes = scheduleImageGenerator.createSchedule(
-            YasnoGroup.Group1,
+            yasnoGroup,
             hours
         )
         return LastWeekPowerScheduleImage(

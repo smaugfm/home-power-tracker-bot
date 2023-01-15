@@ -2,6 +2,7 @@ package com.github.smaugfm.power.tracker.config
 
 import com.github.smaugfm.power.tracker.Config
 import com.github.smaugfm.power.tracker.ConfigId
+import com.github.smaugfm.power.tracker.YasnoGroup
 import com.github.smaugfm.power.tracker.persistence.ConfigEntity
 import com.github.smaugfm.power.tracker.persistence.ConfigsRepository
 import kotlinx.coroutines.flow.map
@@ -17,8 +18,16 @@ class ConfigServiceImpl(
         repository.findAll().asFlow().map(::mapDto)
 
 
-    override suspend fun getById(id: ConfigId) =
-        repository.findById(id).awaitSingleOrNull()?.let(::mapDto)
+    override suspend fun getYasnoGroup(id: ConfigId) =
+        repository.findById(id).awaitSingleOrNull()?.let(::mapDto)?.yasnoGroup
 
-    private fun mapDto(it: ConfigEntity) = Config(it.id, it.address, it.port)
+    private fun mapDto(it: ConfigEntity) = Config(
+        it.id,
+        it.address,
+        if (it.yasnoGroup == 1)
+            YasnoGroup.Group1
+        else
+            YasnoGroup.Group2,
+        it.port
+    )
 }

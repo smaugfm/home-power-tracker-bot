@@ -30,6 +30,7 @@ data class PowerIspState(
 data class Config(
     val id: ConfigId,
     val address: String,
+    val yasnoGroup: YasnoGroup,
     val port: Int?,
 )
 

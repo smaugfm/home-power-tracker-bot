@@ -143,3 +143,5 @@ databaseChangeLog:
               - column:
                   descending: true
                   name: created
+  - include:
+      file: liquibase-2.yml
