@@ -9,12 +9,14 @@ import com.github.smaugfm.power.tracker.persistence.TelegramMessagesRepository
 import com.github.smaugfm.power.tracker.stats.EventStats
 import dev.inmo.tgbotapi.bot.TelegramBot
 import dev.inmo.tgbotapi.extensions.api.deleteMessage
+import dev.inmo.tgbotapi.extensions.api.edit.media.editMessageMedia
 import dev.inmo.tgbotapi.extensions.api.edit.text.editMessageText
 import dev.inmo.tgbotapi.extensions.api.send.media.sendPhoto
 import dev.inmo.tgbotapi.extensions.api.send.sendTextMessage
 import dev.inmo.tgbotapi.extensions.utils.extensions.raw.from
 import dev.inmo.tgbotapi.requests.abstracts.InputFile
 import dev.inmo.tgbotapi.types.ChatId
+import dev.inmo.tgbotapi.types.media.TelegramMediaPhoto
 import dev.inmo.tgbotapi.types.message.MarkdownV2ParseMode
 import dev.inmo.tgbotapi.types.message.abstracts.CommonMessage
 import dev.inmo.tgbotapi.types.message.content.MessageContent
@@ -54,17 +56,35 @@ class TelegramUserInteractionOperations(
 ) : UserInteractionOperations<TelegramUserInteractionData> {
     override suspend fun postForEvent(event: Event, stats: List<EventStats>) {
         val text = formatter.getTelegramMessage(stats)
+        val imageBytes = stats.filterIsInstance<EventStats.LastWeekPowerScheduleImage>()
+            .firstOrNull()?.pngBytes
 
         chatIdRepository
             .findAllByConfigId(event.configId)
             .asFlow()
             .map {
                 try {
-                    val msg = bot.sendTextMessage(
-                        ChatId(it.chatId),
-                        text,
-                        MarkdownV2ParseMode
-                    )
+                    val msg = if (imageBytes == null)
+                        bot.sendTextMessage(
+                            ChatId(it.chatId),
+                            text,
+                            MarkdownV2ParseMode
+                        )
+                    else {
+                        bot.sendPhoto(
+                            chatId = ChatId(it.chatId),
+                            fileId = InputFile.fromInput("schedule.png") {
+                                ByteArrayInputStream(imageBytes).asInput()
+                            },
+                            text = text,
+                            parseMode = MarkdownV2ParseMode
+                        )
+                    }
+                    log.info {
+                        "Posted Telegram messageId=${msg.messageId} in " +
+                                "chatId=${msg.chat.id} for event $event with new stats " +
+                                "(photo=${imageBytes != null})"
+                    }
                     messagesRepository.save(
                         TelegramMessageEntity(
                             msg.messageId,
@@ -86,6 +106,8 @@ class TelegramUserInteractionOperations(
 
     override suspend fun updateForEvent(event: Event, stats: List<EventStats>) {
         val newText = formatter.getTelegramMessage(stats)
+        val newImageBytes = stats.filterIsInstance<EventStats.LastWeekPowerScheduleImage>()
+            .firstOrNull()?.pngBytes
         messagesRepository
             .findAllByEventId(event.id)
             .switchIfEmpty {
@@ -94,15 +116,28 @@ class TelegramUserInteractionOperations(
             .asFlow()
             .map { messageEntity ->
                 try {
-                    bot.editMessageText(
-                        ChatId(messageEntity.chatId),
-                        messageEntity.messageId,
-                        newText,
-                        MarkdownV2ParseMode
-                    )
+                    if (newImageBytes == null)
+                        bot.editMessageText(
+                            ChatId(messageEntity.chatId),
+                            messageEntity.messageId,
+                            newText,
+                            MarkdownV2ParseMode
+                        )
+                    else
+                        bot.editMessageMedia(
+                            ChatId(messageEntity.chatId),
+                            messageEntity.messageId,
+                            TelegramMediaPhoto(
+                                InputFile.fromInput("schedule.png") {
+                                    ByteArrayInputStream(newImageBytes).asInput()
+                                },
+                                newText
+                            )
+                        )
                     log.info {
                         "Updated Telegram messageId=${messageEntity.messageId} in " +
-                                "chatId=${messageEntity.chatId} for event $event with new stats"
+                                "chatId=${messageEntity.chatId} for event $event with new stats " +
+                                "(photo=${newImageBytes != null})"
                     }
                 } catch (e: Throwable) {
                     log.error(e) {
@@ -143,7 +178,8 @@ class TelegramUserInteractionOperations(
 
     override suspend fun postStats(data: TelegramUserInteractionData, stats: List<EventStats>) {
         val text = formatter.getTelegramMessage(stats)
-        val imageBytes = stats.filterIsInstance<EventStats.LastWeekPowerScheduleImage>().firstOrNull()?.pngBytes
+        val imageBytes = stats.filterIsInstance<EventStats.LastWeekPowerScheduleImage>()
+            .firstOrNull()?.pngBytes
         if (imageBytes == null) {
             bot.sendTextMessage(ChatId(data.telegramChatId), text, MarkdownV2ParseMode)
         } else {

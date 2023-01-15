@@ -20,11 +20,12 @@ class StatsLoop(
 ) : LaunchCoroutineBean {
     override suspend fun launch(scope: CoroutineScope) {
         userInteraction.statsFlow().collect { userInteractionData ->
+            val period = SummaryStatsPeriod.LastWeek
             val enrichedPeriod = periodEnricher.forPeriod(
                 userInteractionData.configId,
                 EventType.POWER,
-                SummaryStatsPeriod.LastWeek,
-                periodEnricher.getStartOfPeriod(SummaryStatsPeriod.LastWeek, Instant.now()).toInstant()
+                period,
+                periodEnricher.getStartOfPeriod(period, Instant.now()).toInstant()
             )
 
             val stats = summaryStatsService

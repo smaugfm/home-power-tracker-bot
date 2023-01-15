@@ -62,12 +62,10 @@ class ScheduleImageStatsService(
                             }
                         }
                     }
-                    if (minuteStart <= 30 || minuteEnd > 30) {
-                        if (minuteStart > 30)
-                            weekHourStart++
-                        if (minuteEnd <= 30)
-                            weekHourEnd--
-                    }
+                    if (minuteStart > 40)
+                        weekHourStart++
+                    if (minuteEnd <= 25)
+                        weekHourEnd--
                 }
 
                 weekHourStart..weekHourEnd
