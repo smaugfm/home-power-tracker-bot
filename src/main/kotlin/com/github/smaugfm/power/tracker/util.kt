@@ -26,6 +26,8 @@ inline fun <T : Any> T?.ifNull(action: () -> Unit) = this.also {
         action()
 }
 
+fun getResourceAsText(path: String): String? =
+    object {}.javaClass.classLoader.getResource(path)?.readText()
 
 fun Duration.humanReadable(): String {
     val truncated = this.truncatedTo(ChronoUnit.MINUTES)

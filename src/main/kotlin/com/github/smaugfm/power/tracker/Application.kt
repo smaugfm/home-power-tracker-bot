@@ -3,13 +3,14 @@ package com.github.smaugfm.power.tracker
 import com.github.smaugfm.power.tracker.spring.LaunchCoroutineBean
 import com.github.smaugfm.power.tracker.spring.MainLoopProperties
 import com.github.smaugfm.power.tracker.spring.NetworkStabilityProperties
-import kotlinx.coroutines.joinAll
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.supervisorScope
+import com.microsoft.playwright.Page
+import com.microsoft.playwright.Playwright
+import kotlinx.coroutines.*
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.runApplication
 import org.springframework.context.ConfigurableApplicationContext
+import org.springframework.context.annotation.Bean
 import org.springframework.data.r2dbc.config.EnableR2dbcAuditing
 import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories
 

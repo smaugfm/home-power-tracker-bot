@@ -39,6 +39,7 @@ dependencies {
     implementation("net.time4j:time4j-tzdata:5.0-2022a")
     implementation("com.h2database:h2")
     implementation("io.r2dbc:r2dbc-h2")
+    implementation("com.microsoft.playwright:playwright:1.28.1")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     runtimeOnly("org.postgresql:postgresql")
     runtimeOnly("org.postgresql:r2dbc-postgresql")
