@@ -6,6 +6,7 @@ build/
 !**/src/test/**/build/
 /testdb.*
 db.json
+schedule-screenshot.png
 docker-compose.yml
 .DS_Store
 

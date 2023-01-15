@@ -21,6 +21,7 @@ class TelegramMessageCreator {
                 listOf(simpleSingleEventText(stats), extendedSingleEventText(stats))
 
             is EventStats.Summary -> summaryStatsText(stats)
+            is EventStats.LastWeekPowerScheduleImage -> emptyList()
         }
 
     private fun simpleSingleEventText(stats: EventStats.Single) =

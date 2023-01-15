@@ -38,4 +38,7 @@ sealed class EventStats(
         val downPeriodicStats: PeriodicStats
     ) : EventStats(type)
 
+    class LastWeekPowerScheduleImage(
+        val pngBytes: ByteArray
+    ) : EventStats(EventType.POWER)
 }

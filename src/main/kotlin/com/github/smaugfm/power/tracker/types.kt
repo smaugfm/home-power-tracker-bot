@@ -1,5 +1,6 @@
 package com.github.smaugfm.power.tracker
 
+import kotlinx.coroutines.CompletableDeferred
 import java.time.Duration
 import java.time.Instant
 
@@ -65,4 +66,14 @@ sealed class UserInteractionData(
 data class EventDeletionRequest<T : UserInteractionData>(
     val data: T,
     val eventId: EventId
+)
+
+enum class YasnoGroup {
+    Group1, Group2
+}
+
+data class ScheduleImageCreateRequest(
+    val group: YasnoGroup,
+    val outageHourRanges: List<IntRange>,
+    val future: CompletableDeferred<ByteArray>
 )

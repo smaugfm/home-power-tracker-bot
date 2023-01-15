@@ -1,13 +1,13 @@
 package com.github.smaugfm.power.tracker.stats
 
 import assertk.assertThat
-import assertk.assertions.isEmpty
 import assertk.assertions.isEqualTo
 import assertk.assertions.isFalse
 import assertk.assertions.isNull
 import com.github.smaugfm.power.tracker.RepositoryTestBase
 import com.github.smaugfm.power.tracker.EventType
 import com.github.smaugfm.power.tracker.events.EventsService
+import com.github.smaugfm.power.tracker.stats.single.SingleEventStatsService
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test

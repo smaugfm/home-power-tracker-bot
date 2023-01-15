@@ -1,8 +1,10 @@
-package com.github.smaugfm.power.tracker.stats
+package com.github.smaugfm.power.tracker.stats.single
 
 import com.github.smaugfm.power.tracker.Event
 import com.github.smaugfm.power.tracker.EventType
 import com.github.smaugfm.power.tracker.events.EventsService
+import com.github.smaugfm.power.tracker.stats.EventStats
+import com.github.smaugfm.power.tracker.stats.StatsService
 import org.springframework.core.annotation.Order
 import org.springframework.stereotype.Service
 

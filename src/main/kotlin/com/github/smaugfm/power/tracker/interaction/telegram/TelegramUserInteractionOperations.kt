@@ -10,13 +10,18 @@ import com.github.smaugfm.power.tracker.stats.EventStats
 import dev.inmo.tgbotapi.bot.TelegramBot
 import dev.inmo.tgbotapi.extensions.api.deleteMessage
 import dev.inmo.tgbotapi.extensions.api.edit.text.editMessageText
+import dev.inmo.tgbotapi.extensions.api.send.media.sendPhoto
 import dev.inmo.tgbotapi.extensions.api.send.sendTextMessage
 import dev.inmo.tgbotapi.extensions.utils.extensions.raw.from
+import dev.inmo.tgbotapi.requests.abstracts.InputFile
 import dev.inmo.tgbotapi.types.ChatId
 import dev.inmo.tgbotapi.types.message.MarkdownV2ParseMode
 import dev.inmo.tgbotapi.types.message.abstracts.CommonMessage
 import dev.inmo.tgbotapi.types.message.content.MessageContent
 import dev.inmo.tgbotapi.utils.RiskFeature
+import io.ktor.utils.io.*
+import io.ktor.utils.io.core.*
+import io.ktor.utils.io.streams.*
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.flow.*
@@ -26,6 +31,7 @@ import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
+import java.io.ByteArrayInputStream
 import java.time.Duration
 
 private val log = KotlinLogging.logger { }
@@ -135,9 +141,21 @@ class TelegramUserInteractionOperations(
         log.warn { "TODO: EXPORT NOT IMPLEMENTED" }
     }
 
-    override suspend fun postStats(data: TelegramUserInteractionData, stats: EventStats.Summary) {
-        val text = formatter.getTelegramMessage(listOf(stats))
-        bot.sendTextMessage(ChatId(data.telegramChatId), text, MarkdownV2ParseMode)
+    override suspend fun postStats(data: TelegramUserInteractionData, stats: List<EventStats>) {
+        val text = formatter.getTelegramMessage(stats)
+        val imageBytes = stats.filterIsInstance<EventStats.LastWeekPowerScheduleImage>().firstOrNull()?.pngBytes
+        if (imageBytes == null) {
+            bot.sendTextMessage(ChatId(data.telegramChatId), text, MarkdownV2ParseMode)
+        } else {
+            bot.sendPhoto(
+                chatId = ChatId(data.telegramChatId),
+                fileId = InputFile.fromInput("schedule.png") {
+                    ByteArrayInputStream(imageBytes).asInput()
+                },
+                text = text,
+                parseMode = MarkdownV2ParseMode
+            )
+        }
     }
 
     override suspend fun postUnstableNetworkTimeout(duration: Duration) {

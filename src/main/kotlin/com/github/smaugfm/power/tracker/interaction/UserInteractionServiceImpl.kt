@@ -54,7 +54,7 @@ class UserInteractionServiceImpl(
         }
     }
 
-    override suspend fun postStats(data: UserInteractionData, stats: EventStats.Summary) {
+    override suspend fun postStats(data: UserInteractionData, stats: List<EventStats>) {
         log.info { "Posting stats to request=$data" }
         operationsByUserData(data).forEach {
             it.postStats(data, stats)

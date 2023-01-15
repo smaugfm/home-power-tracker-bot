@@ -10,7 +10,7 @@ interface UserInteractionOperations<T : UserInteractionData> {
     suspend fun updateForEvent(event: Event, stats: List<EventStats>)
     suspend fun deleteForEvent(event: Event)
     suspend fun postExport(data: T, events: Flow<Event>)
-    suspend fun postStats(data: T, stats: EventStats.Summary)
+    suspend fun postStats(data: T, stats: List<EventStats>)
     suspend fun postUnstableNetworkTimeout(duration: Duration)
 
     fun deletionFlow(): Flow<EventDeletionRequest<T>>

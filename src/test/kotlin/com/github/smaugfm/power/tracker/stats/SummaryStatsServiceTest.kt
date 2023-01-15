@@ -6,6 +6,7 @@ import com.github.smaugfm.power.tracker.Event
 import com.github.smaugfm.power.tracker.EventType
 import com.github.smaugfm.power.tracker.RepositoryTestBase
 import com.github.smaugfm.power.tracker.SummaryStatsPeriod
+import com.github.smaugfm.power.tracker.stats.summary.SummaryStatsService
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
