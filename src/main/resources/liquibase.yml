@@ -45,15 +45,21 @@ databaseChangeLog:
               - column:
                   name: notify_power
                   type: boolean
+                  defaultValueBoolean: true
                   constraints:
                     nullable: false
-                    defaultValue: true
               - column:
                   name: notify_isp
                   type: boolean
+                  defaultValueBoolean: true
                   constraints:
                     nullable: false
-                    defaultValue: true
+              - column:
+                  name: yasno_group
+                  type: int
+                  defaultValueNumeric: '1'
+                  constraints:
+                    nullable: false
         - createTable:
             tableName: tb_events
             columns:
@@ -70,7 +76,8 @@ databaseChangeLog:
                   constraints:
                     nullable: false
                     foreignKeyName: fkey_tb_events_tb_configs
-                    reference: tb_configs(id)
+                    references: tb_configs(id)
+                    deleteCascade: true
               - column:
                   name: type
                   type: varchar
@@ -101,7 +108,8 @@ databaseChangeLog:
                   constraints:
                     nullable: false
                     foreignKeyName: fkey_tb_telegram_chat_ids_tb_configs
-                    reference: tb_configs(id)
+                    references: tb_configs(id)
+                    deleteCascade: true
         - createTable:
             tableName: tb_telegram_messages
             columns:
@@ -123,14 +131,16 @@ databaseChangeLog:
                   constraints:
                     nullable: false
                     foreignKeyName: fkey_tb_telegram_messages_tb_events
-                    reference: tb_events(id)
+                    references: tb_events(id)
+                    deleteCascade: true
               - column:
                   name: chat_id
                   type: bigint
                   constraints:
                     nullable: false
                     foreignKeyName: fkey_tb_telegram_messages_tb_telegram_chat_ids
-                    reference: tb_telegram_chat_ids(chat_id)
+                    references: tb_telegram_chat_ids(chat_id)
+                    deleteCascade: true
   - changeSet:
       id: 03
       author: smaugfm
@@ -143,5 +153,3 @@ databaseChangeLog:
               - column:
                   descending: true
                   name: created
-  - include:
-      file: liquibase-2.yml
