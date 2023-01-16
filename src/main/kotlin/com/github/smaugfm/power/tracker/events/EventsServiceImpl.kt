@@ -8,6 +8,7 @@ import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactive.awaitFirstOrNull
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import mu.KotlinLogging
+import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import java.time.Instant
@@ -40,6 +41,9 @@ class EventsServiceImpl(
             configId,
             time
         ).mapFluxDto()
+
+    override suspend fun getLastN(number: Int): Flow<Event> =
+        eventsRepository.findAllByOrderByCreatedDesc(PageRequest.of(0, number)).mapFluxDto()
 
     override suspend fun getEventsOfTypeBetween(
         configId: ConfigId,

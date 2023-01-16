@@ -7,7 +7,8 @@ import java.time.Duration
 data class MainLoopProperties(
     val interval: Duration,
     val reachableTimeout: Duration,
-    val tries: Int
+    val tries: Int,
+    val updateLastEvents: Int = 0
 )
 
 @ConfigurationProperties(prefix = "app.network-stability")

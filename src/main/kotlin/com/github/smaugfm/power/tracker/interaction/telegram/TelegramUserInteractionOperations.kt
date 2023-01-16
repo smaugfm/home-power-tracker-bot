@@ -8,6 +8,7 @@ import com.github.smaugfm.power.tracker.persistence.TelegramMessageEntity
 import com.github.smaugfm.power.tracker.persistence.TelegramMessagesRepository
 import com.github.smaugfm.power.tracker.stats.EventStats
 import dev.inmo.tgbotapi.bot.TelegramBot
+import dev.inmo.tgbotapi.bot.exceptions.MessageIsNotModifiedException
 import dev.inmo.tgbotapi.extensions.api.deleteMessage
 import dev.inmo.tgbotapi.extensions.api.edit.media.editMessageMedia
 import dev.inmo.tgbotapi.extensions.api.edit.text.editMessageText
@@ -72,12 +73,12 @@ class TelegramUserInteractionOperations(
                         )
                     else {
                         bot.sendPhoto(
-                            chatId = ChatId(it.chatId),
-                            fileId = InputFile.fromInput("schedule.png") {
+                            ChatId(it.chatId),
+                            InputFile.fromInput("schedule.png") {
                                 ByteArrayInputStream(imageBytes).asInput()
                             },
-                            text = text,
-                            parseMode = MarkdownV2ParseMode
+                            text,
+                            MarkdownV2ParseMode
                         )
                     }
                     log.info {
@@ -123,22 +124,35 @@ class TelegramUserInteractionOperations(
                             newText,
                             MarkdownV2ParseMode
                         )
-                    else
-                        bot.editMessageMedia(
+                    else {
+                        val tempMsg = bot.sendPhoto(
                             ChatId(messageEntity.chatId),
-                            messageEntity.messageId,
-                            TelegramMediaPhoto(
-                                InputFile.fromInput("schedule.png") {
-                                    ByteArrayInputStream(newImageBytes).asInput()
-                                },
-                                newText
-                            )
+                            InputFile.fromInput("schedule.png") {
+                                ByteArrayInputStream(newImageBytes).asInput()
+                            },
+                            disableNotification = true
                         )
+                        try {
+                            val newFileId = tempMsg.content.media.fileId.fileId
+                            bot.editMessageMedia(
+                                ChatId(messageEntity.chatId),
+                                messageEntity.messageId,
+                                TelegramMediaPhoto(
+                                    InputFile.fromId(newFileId),
+                                    newText
+                                ),
+                            )
+                        } finally {
+                            bot.deleteMessage(tempMsg)
+                        }
+                    }
                     log.info {
                         "Updated Telegram messageId=${messageEntity.messageId} in " +
                                 "chatId=${messageEntity.chatId} for event $event with new stats " +
                                 "(photo=${newImageBytes != null})"
                     }
+                } catch (e: MessageIsNotModifiedException) {
+                    log.warn { "No modifications made to the messageId=${messageEntity.messageId}" }
                 } catch (e: Throwable) {
                     log.error(e) {
                         "Error updating Telegram messageId=${messageEntity.messageId} " +

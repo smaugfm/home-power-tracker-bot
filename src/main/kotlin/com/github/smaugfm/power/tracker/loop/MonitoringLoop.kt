@@ -26,6 +26,14 @@ class MonitoringLoop(
 ) : LaunchCoroutineBean {
     override suspend fun launch(scope: CoroutineScope) {
         val stateLogged = mutableMapOf<String, Boolean>()
+
+        if (props.updateLastEvents > 0) {
+            log.info { "Updating last ${props.updateLastEvents} events..." }
+            events.getLastN(props.updateLastEvents).collect {
+                userInteraction.updateForEvent(it)
+            }
+        }
+
         while (true) {
             try {
                 if (!networkStability.waitStable())
