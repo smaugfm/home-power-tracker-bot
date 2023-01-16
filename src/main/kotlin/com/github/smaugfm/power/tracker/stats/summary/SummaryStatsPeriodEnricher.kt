@@ -21,9 +21,9 @@ class SummaryStatsPeriodEnricher(private val service: EventsService) {
         periodFilter: (SummaryStatsPeriod) -> Boolean = { true }
     ): List<EnrichedSummaryStatsPeriod> =
         determinePeriodForEvent(event)
-            .filter { x -> periodFilter(x.first) }
-            .map { (period, to) ->
-                val startOfPeriod = getStartOfPeriod(period, to.toInstant())
+            .filter { periodFilter(it) }
+            .map { period ->
+                val startOfPeriod = getStartOfPeriod(period, event.time)
 
                 forPeriod(event.configId, event.type, period, startOfPeriod.toInstant())
             }
@@ -47,25 +47,25 @@ class SummaryStatsPeriodEnricher(private val service: EventsService) {
         )
     }
 
-    suspend fun determinePeriodForEvent(event: Event): List<Pair<SummaryStatsPeriod, ZonedDateTime>> {
-        val result = mutableListOf<Pair<SummaryStatsPeriod, ZonedDateTime>>()
+    suspend fun determinePeriodForEvent(event: Event): List<SummaryStatsPeriod> {
+        val result = mutableListOf<SummaryStatsPeriod>()
         val previous = service.findPreviousOfSameType(event)
             ?.time?.atZone(ZoneId.systemDefault()) ?: return result
         val zoned = event.time.atZone(ZoneId.systemDefault())
 
         val startOfYear = getStartOfPeriod(SummaryStatsPeriod.LastYear, event.time)
         if (previous < startOfYear && startOfYear <= zoned) {
-            result.add(Pair(SummaryStatsPeriod.LastYear, startOfYear))
+            result.add(SummaryStatsPeriod.LastYear)
         }
 
         val startOfMonth = getStartOfPeriod(SummaryStatsPeriod.LastMonth, event.time)
         if (previous < startOfMonth && startOfMonth <= zoned) {
-            result.add(Pair(SummaryStatsPeriod.LastMonth, startOfMonth))
+            result.add(SummaryStatsPeriod.LastMonth)
         }
 
         val startOfWeek = getStartOfPeriod(SummaryStatsPeriod.LastWeek, event.time)
         if (previous < startOfWeek && startOfWeek <= zoned) {
-            result.add(Pair(SummaryStatsPeriod.LastWeek, startOfWeek))
+            result.add(SummaryStatsPeriod.LastWeek)
         }
 
         return result

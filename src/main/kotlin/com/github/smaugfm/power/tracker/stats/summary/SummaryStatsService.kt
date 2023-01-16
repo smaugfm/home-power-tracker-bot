@@ -3,16 +3,20 @@ package com.github.smaugfm.power.tracker.stats.summary
 import com.github.smaugfm.power.tracker.*
 import com.github.smaugfm.power.tracker.stats.EventStats
 import com.github.smaugfm.power.tracker.stats.StatsService
+import mu.KotlinLogging
 import org.springframework.core.annotation.Order
 import org.springframework.stereotype.Service
 import java.time.Duration
 import kotlin.math.roundToLong
+
+private val log = KotlinLogging.logger { }
 
 @Service
 @Order(2)
 class SummaryStatsService(private val periodEnricher: SummaryStatsPeriodEnricher) : StatsService {
     override suspend fun calculate(event: Event): List<EventStats.Summary> =
         periodEnricher.forEvent(event).mapNotNull {
+            log.info { "Calculating stats for configId=${event.configId}: $it" }
             calculateStats(it)
         }
 
