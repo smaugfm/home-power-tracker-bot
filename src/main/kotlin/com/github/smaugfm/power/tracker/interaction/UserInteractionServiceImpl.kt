@@ -41,7 +41,7 @@ class UserInteractionServiceImpl(
 
     override suspend fun updateForEvent(event: Event) {
         val stats = getStats(event)
-        log.info { "Updating notifications or event $event with new stats $stats" }
+        log.info { "Updating notifications on event $event with new stats $stats" }
         operations.forEach {
             it.updateForEvent(event, stats)
         }

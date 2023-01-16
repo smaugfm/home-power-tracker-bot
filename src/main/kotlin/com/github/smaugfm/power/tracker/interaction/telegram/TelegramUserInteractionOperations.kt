@@ -132,6 +132,10 @@ class TelegramUserInteractionOperations(
                             },
                             disableNotification = true
                         )
+                        log.info {
+                            "Posted temp photo messageId=${tempMsg.messageId} " +
+                                    "in chatId=${messageEntity.chatId}"
+                        }
                         try {
                             val newFileId = tempMsg.content.media.fileId.fileId
                             bot.editMessageMedia(
@@ -144,6 +148,10 @@ class TelegramUserInteractionOperations(
                             )
                         } finally {
                             bot.deleteMessage(tempMsg)
+                            log.info {
+                                "Deleted temp photo messageId=${tempMsg.messageId} " +
+                                        "from chatId=${messageEntity.chatId}"
+                            }
                         }
                     }
                     log.info {

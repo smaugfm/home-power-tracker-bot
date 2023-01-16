@@ -8,7 +8,6 @@ data class MainLoopProperties(
     val interval: Duration,
     val reachableTimeout: Duration,
     val tries: Int,
-    val updateLastEvents: Int = 0
 )
 
 @ConfigurationProperties(prefix = "app.network-stability")
@@ -19,4 +18,9 @@ data class NetworkStabilityProperties(
     val waitForStableNetworkTimeout: Duration,
     val consecutiveTriesToConsiderOnline: Int,
     val hosts: List<String>,
+)
+
+@ConfigurationProperties(prefix = "app.startup")
+data class StartupProperties(
+    val updateLastEvents: Int = 0
 )

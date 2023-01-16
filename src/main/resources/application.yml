@@ -14,6 +14,7 @@ app:
     interval: 10s
     reachable-timeout: 10s
     tries: 3
+  startup:
     update-last-events: 0
   network-stability:
     interval: 2s

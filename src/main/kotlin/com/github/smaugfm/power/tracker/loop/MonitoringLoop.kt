@@ -7,6 +7,7 @@ import com.github.smaugfm.power.tracker.network.NetworkStabilityService
 import com.github.smaugfm.power.tracker.network.PingService
 import com.github.smaugfm.power.tracker.spring.LaunchCoroutineBean
 import com.github.smaugfm.power.tracker.spring.MainLoopProperties
+import com.github.smaugfm.power.tracker.spring.StartupProperties
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import mu.KotlinLogging
@@ -23,14 +24,17 @@ class MonitoringLoop(
     private val events: EventsService,
     private val userInteraction: UserInteractionService,
     private val props: MainLoopProperties,
+    private val startupProps: StartupProperties,
 ) : LaunchCoroutineBean {
     override suspend fun launch(scope: CoroutineScope) {
         val stateLogged = mutableMapOf<String, Boolean>()
 
-        if (props.updateLastEvents > 0) {
-            log.info { "Updating last ${props.updateLastEvents} events..." }
-            events.getLastN(props.updateLastEvents).collect {
-                userInteraction.updateForEvent(it)
+        startupProps.updateLastEvents.let { updateLastEvents ->
+            if (updateLastEvents > 0) {
+                log.info { "Updating last $updateLastEvents events..." }
+                events.getLastN(updateLastEvents).collect {
+                    userInteraction.updateForEvent(it)
+                }
             }
         }
 
