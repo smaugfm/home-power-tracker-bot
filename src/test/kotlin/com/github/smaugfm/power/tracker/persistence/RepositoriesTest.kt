@@ -4,8 +4,8 @@ import assertk.assertThat
 import assertk.assertions.isEqualTo
 import assertk.assertions.isEqualToWithGivenProperties
 import assertk.assertions.isGreaterThanOrEqualTo
-import com.github.smaugfm.power.tracker.RepositoryTestBase
 import com.github.smaugfm.power.tracker.EventType
+import com.github.smaugfm.power.tracker.RepositoryTestBase
 import org.junit.jupiter.api.Test
 import java.time.Instant
 
@@ -21,7 +21,8 @@ class RepositoriesTest : RepositoryTestBase() {
                 8080,
                 notifyPower = true,
                 notifyIsp = true,
-                1L
+                yasnoGroup = 1,
+                id = 1L
             ),
             ConfigEntity::address,
             ConfigEntity::port,

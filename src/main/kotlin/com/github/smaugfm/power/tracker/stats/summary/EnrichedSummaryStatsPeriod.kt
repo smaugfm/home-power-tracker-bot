@@ -1,6 +1,7 @@
 package com.github.smaugfm.power.tracker.stats.summary
 
 import com.github.smaugfm.power.tracker.Event
+import com.github.smaugfm.power.tracker.EventType
 import com.github.smaugfm.power.tracker.SummaryStatsPeriod
 import java.time.Duration
 import java.time.Instant
@@ -9,10 +10,9 @@ data class EnrichedSummaryStatsPeriod(
     val period: SummaryStatsPeriod,
     val start: Instant,
     val end: Instant,
+    val type: EventType,
     private val events: List<Event>
 ) {
-    val type = events.first().type
-
     val hasNoEvents = events.isEmpty()
 
     val wholeDuration: Duration = Duration.between(start, end)
@@ -24,14 +24,14 @@ data class EnrichedSummaryStatsPeriod(
 
     private val eventsSurrounded by lazy {
         events.toMutableList().also { list ->
-            val first = list.first()
-            if (first.time != start) list.add(
+            val first = list.firstOrNull()
+            if (first != null && first.time != start) list.add(
                 0, Event(
                     0, !first.state, first.type, first.configId, start
                 )
             )
-            val curLast = list.last()
-            if (curLast.time != end) list.add(
+            val curLast = list.lastOrNull()
+            if (curLast != null && curLast.time != end) list.add(
                 Event(
                     0, !curLast.state, curLast.type, curLast.configId, end
                 )

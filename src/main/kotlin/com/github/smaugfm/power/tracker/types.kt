@@ -14,6 +14,12 @@ data class Event(
     fun since(earlier: Event): Duration = Duration.between(earlier.time, time)
 }
 
+data class NewEvent(
+    val state: Boolean,
+    val type: EventType,
+    val configId: ConfigId,
+)
+
 typealias EventId = Long
 typealias ConfigId = Long
 
@@ -25,6 +31,12 @@ enum class EventType {
 data class PowerIspState(
     val hasPower: Boolean?,
     val hasIsp: Boolean?
+)
+
+data class MonitoringEvent(
+    val prevState: PowerIspState,
+    val curState: PowerIspState,
+    val configId: ConfigId
 )
 
 data class Config(

@@ -30,12 +30,12 @@ class SummaryStatsServiceTest : RepositoryTestBase() {
 
         insertEventWithTime(configId, "2022-12-01 00:00:00 Europe/Kiev")
         val (year, month) = getPeriods(configId, "2023-01-01T12:00:00.000+02:00")
-        assertThat(year.first).isInstanceOf(SummaryStatsPeriod.LastYear::class)
-        assertThat(month.first).isInstanceOf(SummaryStatsPeriod.LastMonth::class)
-        assertThat(year.second).assertThat(
+        assertThat(year.period).isInstanceOf(SummaryStatsPeriod.LastYear::class)
+        assertThat(month.period).isInstanceOf(SummaryStatsPeriod.LastMonth::class)
+        assertThat(year.end).assertThat(
             OffsetDateTime.parse("2022-01-01T00:00:00.000+02:00").toInstant(),
         )
-        assertThat(month.second).assertThat(
+        assertThat(month.end).assertThat(
             OffsetDateTime.parse("2022-01-01T00:00:00.000+02:00").toInstant(),
         )
     }
@@ -108,7 +108,7 @@ class SummaryStatsServiceTest : RepositoryTestBase() {
 
     private fun getPeriods(configId: Long, time: String) =
         runBlocking {
-            enricher.determinePeriodForEvent(
+            enricher.forEvent(
                 Event(
                     2,
                     false,

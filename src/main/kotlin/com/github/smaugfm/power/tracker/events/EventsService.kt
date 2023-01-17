@@ -16,11 +16,13 @@ interface EventsService {
         to: Instant
     ): Flow<Event>
 
-    fun calculateAddEvents(
+    fun calculateNewEvents(
         prevState: PowerIspState,
         currentState: PowerIspState,
         configId: ConfigId
-    ): Flow<Event>
+    ): List<NewEvent>
+
+    fun addEvents(events: List<NewEvent>): Flow<Event>
 
     suspend fun getCurrentState(configId: ConfigId): PowerIspState
 

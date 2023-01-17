@@ -25,9 +25,10 @@ with ct1 as (select *
           where ((DATE_PART('day', t2.created - t1.created) * 24 + DATE_PART('hour', t2.created - t1.created)) * 60 +
                  DATE_PART('minute', t2.created - t1.created)) < 5)
 
-select id1, c1
-from ids
-union
-select id2, c2
-from ids
-order by c1
+select * from ids
+-- select id1, c1
+-- from ids
+-- union
+-- select id2, c2
+-- from ids
+-- order by c1

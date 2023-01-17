@@ -59,7 +59,10 @@ class EventsServiceImplTest : RepositoryTestBase() {
         val next = PowerIspState(hasPower = true, hasIsp = true)
 
         val now = Instant.now()
-        val events = runBlocking { service.calculateAddEvents(prev, next, configId).toList() }
+        val events = runBlocking {
+            service.addEvents(service.calculateNewEvents(prev, next, configId).toList())
+                .toList()
+        }
         assertThat(events).hasSize(2)
         assertThat(events[0].id).isEqualTo(1)
         assertThat(events[0].state).isEqualTo(true)

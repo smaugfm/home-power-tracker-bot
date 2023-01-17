@@ -63,12 +63,15 @@ class EventsServiceImpl(
         eventsRepository.deleteById(eventId).awaitSingleOrNull()
     }
 
-    override fun calculateAddEvents(
+    override fun calculateNewEvents(
         prevState: PowerIspState,
         currentState: PowerIspState,
         configId: ConfigId,
-    ): Flow<Event> {
-        val events = calculateEvents(prevState, currentState, configId)
+    ): List<NewEvent> {
+        return calculateEvents(prevState, currentState, configId)
+    }
+
+    override fun addEvents(events: List<NewEvent>): Flow<Event> {
         log.info { "Adding new events: $events" }
         return eventsRepository
             .saveAll(events.map { EventEntity(it.state, it.type, it.configId) })
@@ -114,9 +117,4 @@ class EventsServiceImpl(
     private fun Flux<EventEntity>.mapFluxDto(): Flow<Event> =
         this.map(this@EventsServiceImpl::mapDto).asFlow()
 
-    private data class NewEvent(
-        val state: Boolean,
-        val type: EventType,
-        val configId: ConfigId,
-    )
 }

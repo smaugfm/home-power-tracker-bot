@@ -8,6 +8,7 @@ data class MainLoopProperties(
     val interval: Duration,
     val reachableTimeout: Duration,
     val tries: Int,
+    val turnOffDurationThreshold: Duration
 )
 
 @ConfigurationProperties(prefix = "app.network-stability")

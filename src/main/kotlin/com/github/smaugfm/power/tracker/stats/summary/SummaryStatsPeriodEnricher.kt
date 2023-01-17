@@ -43,6 +43,7 @@ class SummaryStatsPeriodEnricher(private val service: EventsService) {
             period,
             start.toInstant(),
             until,
+            type,
             events
         )
     }
