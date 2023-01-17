@@ -1,16 +1,20 @@
-package com.github.smaugfm.power.tracker
+package com.github.smaugfm.power.tracker.scripts
 
 import com.beust.klaxon.Klaxon
-import com.github.smaugfm.power.tracker.persistence.ConfigEntity
-import com.github.smaugfm.power.tracker.persistence.ConfigsRepository
-import com.github.smaugfm.power.tracker.persistence.TelegramChatIdEntity
-import com.github.smaugfm.power.tracker.persistence.TelegramChatIdsRepository
+import com.github.smaugfm.power.tracker.NoLiquibaseTestBase
+import com.github.smaugfm.power.tracker.interaction.telegram.TelegramUserInteractionOperations
+import com.github.smaugfm.power.tracker.persistence.*
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.reactive.asFlow
+import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.r2dbc.core.DatabaseClient
 import org.springframework.test.context.TestPropertySource
 import reactor.core.publisher.Flux
+import java.time.Duration
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 

@@ -42,8 +42,8 @@ class TelegramBotConfiguration {
     @Bean
     fun statsCommandMessagesChannel(): Channel<CommonMessage<MessageContent>> = Channel()
 
-    @RiskFeature
     @Bean
+    @OptIn(RiskFeature::class)
     fun startBotJob(
         bot: TelegramBot,
         @Qualifier("replyMessagesChannel")

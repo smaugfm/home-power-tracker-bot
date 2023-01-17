@@ -39,10 +39,10 @@ import java.time.Duration
 
 private val log = KotlinLogging.logger { }
 
-@RiskFeature
 @Profile("!test")
 @Component
 @FlowPreview
+@OptIn(RiskFeature::class)
 class TelegramUserInteractionOperations(
     private val bot: TelegramBot,
     private val chatIdRepository: TelegramChatIdsRepository,
@@ -111,10 +111,10 @@ class TelegramUserInteractionOperations(
             .firstOrNull()?.pngBytes
         messagesRepository
             .findAllByEventId(event.id)
-            .switchIfEmpty {
+            .asFlow()
+            .onEmpty {
                 log.warn { "Did not find any messages to update for event $event" }
             }
-            .asFlow()
             .map { messageEntity ->
                 try {
                     if (newImageBytes == null)
@@ -232,7 +232,6 @@ class TelegramUserInteractionOperations(
             }
     }
 
-    @RiskFeature
     override fun deletionFlow(): Flow<EventDeletionRequest<TelegramUserInteractionData>> =
         replyMessagesChannel
             .consumeAsFlow()

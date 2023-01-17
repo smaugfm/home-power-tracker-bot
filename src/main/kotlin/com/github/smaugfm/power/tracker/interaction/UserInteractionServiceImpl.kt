@@ -5,7 +5,6 @@ import com.github.smaugfm.power.tracker.UserInteractionData
 import com.github.smaugfm.power.tracker.interaction.telegram.TelegramUserInteractionOperations
 import com.github.smaugfm.power.tracker.stats.EventStats
 import com.github.smaugfm.power.tracker.stats.StatsService
-import dev.inmo.tgbotapi.utils.RiskFeature
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
@@ -16,7 +15,6 @@ import java.time.Duration
 
 private val log = KotlinLogging.logger { }
 
-@RiskFeature
 @Service
 @FlowPreview
 class UserInteractionServiceImpl(

@@ -26,9 +26,3 @@ with ct1 as (select *
                  DATE_PART('minute', t2.created - t1.created)) < 5)
 
 select * from ids
--- select id1, c1
--- from ids
--- union
--- select id2, c2
--- from ids
--- order by c1

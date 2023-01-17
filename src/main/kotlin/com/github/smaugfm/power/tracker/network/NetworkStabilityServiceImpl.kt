@@ -3,23 +3,16 @@ package com.github.smaugfm.power.tracker.network
 import com.github.smaugfm.power.tracker.interaction.UserInteractionService
 import com.github.smaugfm.power.tracker.spring.LaunchCoroutineBean
 import com.github.smaugfm.power.tracker.spring.NetworkStabilityProperties
-import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.DelicateCoroutinesApi
-import kotlinx.coroutines.TimeoutCancellationException
-import kotlinx.coroutines.awaitAll
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.newSingleThreadContext
+import kotlinx.coroutines.*
 import kotlinx.coroutines.time.withTimeout
-import kotlinx.coroutines.withContext
 import mu.KotlinLogging
 import org.springframework.stereotype.Component
 import kotlin.time.toKotlinDuration
 
 private val log = KotlinLogging.logger { }
 
+@OptIn(DelicateCoroutinesApi::class)
 @Component
-@DelicateCoroutinesApi
 class NetworkStabilityServiceImpl(
     protected val ping: Ping,
     private val props: NetworkStabilityProperties,
