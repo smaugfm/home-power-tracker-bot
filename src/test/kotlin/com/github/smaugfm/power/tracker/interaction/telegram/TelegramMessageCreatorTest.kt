@@ -15,7 +15,7 @@ class TelegramMessageCreatorTest : NoLiquibaseTestBase() {
     @Test
     fun getTelegramMessages() {
         println(
-            creator.getTelegramMessage(
+            creator.forStatsMessage(
                 listOf(
                     EventStats.Single.Consecutive.Other(
                         false,
@@ -30,7 +30,7 @@ class TelegramMessageCreatorTest : NoLiquibaseTestBase() {
             )
         )
         println(
-            creator.getTelegramMessage(
+            creator.forStatsMessage(
                 listOf(
                     EventStats.Single.Consecutive.Other(
                         true,
@@ -45,7 +45,7 @@ class TelegramMessageCreatorTest : NoLiquibaseTestBase() {
             )
         )
         println(
-            creator.getTelegramMessage(
+            creator.forStatsMessage(
                 listOf(
                     EventStats.Single.Consecutive.IspDown(
                         Duration.ofDays(3)

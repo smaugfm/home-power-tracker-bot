@@ -1,10 +1,7 @@
 package com.github.smaugfm.power.tracker.stats
 
 import assertk.assertThat
-import assertk.assertions.isBetween
-import assertk.assertions.isEmpty
-import assertk.assertions.isEqualTo
-import assertk.assertions.isInstanceOf
+import assertk.assertions.*
 import com.github.smaugfm.power.tracker.Event
 import com.github.smaugfm.power.tracker.EventType
 import com.github.smaugfm.power.tracker.RepositoryTestBase
@@ -15,6 +12,7 @@ import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.time.Duration
+import java.time.Instant
 import java.time.OffsetDateTime
 
 class SummaryStatsServiceTest : RepositoryTestBase() {
@@ -58,6 +56,22 @@ class SummaryStatsServiceTest : RepositoryTestBase() {
         assertThat(to).assertThat(
             OffsetDateTime.parse("2023-01-02T00:00:00.000+02:00").toInstant(),
         )
+    }
+
+    @Test
+    fun calculateForEmptyPeriodTest() {
+        val configId = saveConfig1().id
+
+        assertThat(runBlocking {
+            service.calculateStats(
+                enricher.forPeriod(
+                    configId,
+                    EventType.POWER,
+                    SummaryStatsPeriod.LastWeek,
+                    Instant.now(),
+                )
+            )
+        }).isNull()
     }
 
     @Test

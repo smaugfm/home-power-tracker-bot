@@ -51,7 +51,6 @@ sealed class SummaryStatsPeriod {
     object LastWeek : SummaryStatsPeriod()
     object LastMonth : SummaryStatsPeriod()
     object LastYear : SummaryStatsPeriod()
-    data class Custom(val lastDays: Int) : SummaryStatsPeriod()
 }
 
 data class PeriodicStats(

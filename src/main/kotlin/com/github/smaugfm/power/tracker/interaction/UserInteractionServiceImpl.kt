@@ -59,6 +59,13 @@ class UserInteractionServiceImpl(
         }
     }
 
+    override suspend fun postNoStats(data: UserInteractionData) {
+        log.info { "Posting NO stats to request=$data" }
+        operationsByUserData(data).forEach {
+            it.postNoStats(data)
+        }
+    }
+
     override suspend fun postUnstableNetworkTimeout(duration: Duration) {
         log.info { "Notifying of an unstable network $duration" }
         operations.forEach {

@@ -56,7 +56,7 @@ class TelegramUserInteractionOperations(
     private val statsCommandMessagesChannel: ReceiveChannel<CommonMessage<MessageContent>>,
 ) : UserInteractionOperations<TelegramUserInteractionData> {
     override suspend fun postForEvent(event: Event, stats: List<EventStats>) {
-        val text = formatter.getTelegramMessage(stats)
+        val text = formatter.forStatsMessage(stats)
         val imageBytes = stats.filterIsInstance<EventStats.LastWeekPowerScheduleImage>()
             .firstOrNull()?.pngBytes
 
@@ -106,7 +106,7 @@ class TelegramUserInteractionOperations(
     }
 
     override suspend fun updateForEvent(event: Event, stats: List<EventStats>) {
-        val newText = formatter.getTelegramMessage(stats)
+        val newText = formatter.forStatsMessage(stats)
         val newImageBytes = stats.filterIsInstance<EventStats.LastWeekPowerScheduleImage>()
             .firstOrNull()?.pngBytes
         messagesRepository
@@ -199,20 +199,37 @@ class TelegramUserInteractionOperations(
     }
 
     override suspend fun postStats(data: TelegramUserInteractionData, stats: List<EventStats>) {
-        val text = formatter.getTelegramMessage(stats)
+        val text = formatter.forStatsMessage(stats)
         val imageBytes = stats.filterIsInstance<EventStats.LastWeekPowerScheduleImage>()
             .firstOrNull()?.pngBytes
-        if (imageBytes == null) {
+        try {
+            if (imageBytes == null) {
+                bot.sendTextMessage(ChatId(data.telegramChatId), text, MarkdownV2ParseMode)
+            } else {
+                bot.sendPhoto(
+                    chatId = ChatId(data.telegramChatId),
+                    fileId = InputFile.fromInput("schedule.png") {
+                        ByteArrayInputStream(imageBytes).asInput()
+                    },
+                    text = text,
+                    parseMode = MarkdownV2ParseMode
+                )
+            }
+        } catch (e: Throwable) {
+            log.error(e) {
+                "Error posting stats to Telegram in chatId=${data.telegramChatId} stats=$stats"
+            }
+        }
+    }
+
+    override suspend fun postNoStats(data: TelegramUserInteractionData) {
+        val text = formatter.noStatsMessage()
+        try {
             bot.sendTextMessage(ChatId(data.telegramChatId), text, MarkdownV2ParseMode)
-        } else {
-            bot.sendPhoto(
-                chatId = ChatId(data.telegramChatId),
-                fileId = InputFile.fromInput("schedule.png") {
-                    ByteArrayInputStream(imageBytes).asInput()
-                },
-                text = text,
-                parseMode = MarkdownV2ParseMode
-            )
+        } catch (e: Throwable) {
+            log.error(e) {
+                "Error posting NO stats to Telegram in chatId=${data.telegramChatId}"
+            }
         }
     }
 
@@ -223,7 +240,13 @@ class TelegramUserInteractionOperations(
             .asFlow()
             .map {
                 bot.sendTextMessage(ChatId(it.chatId), text)
-            }.toList()
+            }
+            .catch {
+                log.error(it) {
+                    "Error sending unstable network timeout message"
+                }
+            }
+            .toList()
             .also {
                 log.info {
                     "Posted unstable network Telegram messages: " +

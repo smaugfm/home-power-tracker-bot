@@ -75,16 +75,12 @@ class SummaryStatsPeriodEnricher(private val service: EventsService) {
     fun getStartOfPeriod(period: SummaryStatsPeriod, to: Instant): ZonedDateTime {
         val zoned = to.atZone(ZoneId.systemDefault())
         val result = when (period) {
-            is SummaryStatsPeriod.Custom -> zoned.minusDays(period.lastDays.toLong())
-                .truncatedTo(ChronoUnit.DAYS)
-
             SummaryStatsPeriod.LastMonth -> zoned.withDayOfMonth(1).truncatedTo(ChronoUnit.DAYS)
             SummaryStatsPeriod.LastWeek -> zoned.with(ChronoField.DAY_OF_WEEK, 1).truncatedTo(ChronoUnit.DAYS)
             SummaryStatsPeriod.LastYear -> zoned.withDayOfYear(1).truncatedTo(ChronoUnit.DAYS)
         }
         return if (result == zoned)
             when (period) {
-                is SummaryStatsPeriod.Custom -> result
                 SummaryStatsPeriod.LastMonth -> result.minusMonths(1)
                 SummaryStatsPeriod.LastWeek -> result.minusWeeks(1)
                 SummaryStatsPeriod.LastYear -> result.minusYears(1)

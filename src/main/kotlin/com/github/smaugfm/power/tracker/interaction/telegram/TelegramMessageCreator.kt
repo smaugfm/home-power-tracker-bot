@@ -9,8 +9,11 @@ import java.time.Duration
 class TelegramMessageCreator {
     private val statsSeparator = "\n\n"
 
-    fun getTelegramMessage(stats: List<EventStats>): String =
+    fun forStatsMessage(stats: List<EventStats>): String =
         stats.flatMap(this::createText).joinToString(statsSeparator)
+
+    fun noStatsMessage(): String =
+        "На цьому тижні в тебе не було включень/відключень світла"
 
     fun unstableNetworkMessage(duration: Duration) =
         "Мережа на сервері бота нестабільна останні ${duration.humanReadable()}"
@@ -70,18 +73,13 @@ class TelegramMessageCreator {
             EventType.ISP -> sb.append("інтернету")
         }
         sb.append(" за ")
-        sb.append(when (stats.period) {
-            is SummaryStatsPeriod.Custom -> {
-                stats.period.lastDays.let {
-                    if (it == 1) "останній день"
-                    else "останні ${Duration.ofDays(it.toLong()).humanReadable()}"
-                }
+        sb.append(
+            when (stats.period) {
+                SummaryStatsPeriod.LastMonth -> "останній місяць"
+                SummaryStatsPeriod.LastWeek -> "останній тиждень"
+                SummaryStatsPeriod.LastYear -> "останній рік"
             }
-
-            SummaryStatsPeriod.LastMonth -> "останній місяць"
-            SummaryStatsPeriod.LastWeek -> "останній тиждень"
-            SummaryStatsPeriod.LastYear -> "останній рік"
-        })
+        )
         sb.append(":\n\n")
 
         val was = when (stats.type) {

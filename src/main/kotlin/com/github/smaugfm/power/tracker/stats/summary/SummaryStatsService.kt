@@ -15,9 +15,13 @@ private val log = KotlinLogging.logger { }
 @Order(2)
 class SummaryStatsService(private val periodEnricher: SummaryStatsPeriodEnricher) : StatsService {
     override suspend fun calculate(event: Event): List<EventStats.Summary> =
-        periodEnricher.forEvent(event).mapNotNull {
-            log.info { "Calculating stats for configId=${event.configId}: $it" }
-            calculateStats(it)
+        periodEnricher.forEvent(event).mapNotNull { enrichedSummaryStatsPeriod ->
+            calculateStats(enrichedSummaryStatsPeriod).also {
+                log.info {
+                    "Calculated stats for " +
+                            "configId=${event.configId}, $enrichedSummaryStatsPeriod, $it"
+                }
+            }
         }
 
     suspend fun calculateStats(period: EnrichedSummaryStatsPeriod): EventStats.Summary? {

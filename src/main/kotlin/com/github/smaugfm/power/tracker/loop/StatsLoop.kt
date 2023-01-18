@@ -28,15 +28,20 @@ class StatsLoop(
                 userInteractionData.configId,
                 EventType.POWER,
                 period,
-                periodEnricher.getStartOfPeriod(period, Instant.now()).toInstant()
+                Instant.now(),
             )
 
+            val stats = summaryStatsService
+                .calculateStats(enrichedPeriod)
+            if (stats == null) {
+                log.info { "No stats for a period: $enrichedPeriod" }
+                userInteraction.postNoStats(userInteractionData)
+                return@collect
+            }
             log.info {
                 "Calculating stats for " +
                         "configId=${userInteractionData.configId}: $enrichedPeriod"
             }
-            val stats = summaryStatsService
-                .calculateStats(enrichedPeriod) ?: return@collect
             val image = scheduleImageStatsService.getImage(
                 userInteractionData.configId,
                 enrichedPeriod

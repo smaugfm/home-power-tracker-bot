@@ -29,6 +29,10 @@ class TestUserInteractionOperations : UserInteractionOperations<UserInteractionD
         log.info { "DELETE FOR EVENT: $event" }
     }
 
+    override suspend fun postNoStats(data: UserInteractionData) {
+        TODO("Not yet implemented")
+    }
+
     override suspend fun postStats(data: UserInteractionData, stats: List<EventStats>) {
         TODO("Not yet implemented")
     }
