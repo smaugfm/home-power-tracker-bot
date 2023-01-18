@@ -4,16 +4,17 @@ import com.github.smaugfm.power.tracker.ScheduleImageCreateRequest
 import com.github.smaugfm.power.tracker.YasnoGroup
 import com.github.smaugfm.power.tracker.getResourceAsText
 import com.github.smaugfm.power.tracker.spring.LaunchCoroutineBean
-import com.microsoft.playwright.Browser
-import com.microsoft.playwright.BrowserContext
-import com.microsoft.playwright.Page
-import com.microsoft.playwright.Playwright
+import com.microsoft.playwright.*
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.flow.consumeAsFlow
 import mu.KotlinLogging
 import org.springframework.stereotype.Service
+import java.time.Duration
+import java.time.LocalDate
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 
 private val log = KotlinLogging.logger { }
 
@@ -26,11 +27,12 @@ class YasnoScheduleImageGeneratorImpl : LaunchCoroutineBean, YasnoScheduleImageG
 
     override suspend fun createSchedule(
         group: YasnoGroup,
+        mondayDate: LocalDate,
         outageHourRanges: List<IntRange>
     ): ByteArray {
         val deferredResult = CompletableDeferred<ByteArray>()
         channelDeferred.await()
-            .send(ScheduleImageCreateRequest(group, outageHourRanges, deferredResult))
+            .send(ScheduleImageCreateRequest(group, outageHourRanges, mondayDate, deferredResult))
         return deferredResult.await()
     }
 
@@ -47,9 +49,9 @@ class YasnoScheduleImageGeneratorImpl : LaunchCoroutineBean, YasnoScheduleImageG
                     channelDeferred.complete(ch)
                     ch.consumeAsFlow().collect { request ->
                         log.info { "Screenshot request received: $request" }
-                        val (group, ranges, future) = request
+                        val (group, ranges, mondayDate, future) = request
                         try {
-                            val bytes = getScreenshotBytes(context, ranges, group)
+                            val bytes = getScreenshotBytes(context, mondayDate, ranges, group)
                             future.complete(bytes)
                         } catch (e: Throwable) {
                             log.error(e) { "Error making Chromium screenshot" }
@@ -63,6 +65,7 @@ class YasnoScheduleImageGeneratorImpl : LaunchCoroutineBean, YasnoScheduleImageG
 
     private fun getScreenshotBytes(
         context: BrowserContext,
+        mondayDate: LocalDate,
         outageHourRanges: List<IntRange>,
         group: YasnoGroup
     ): ByteArray {
@@ -80,9 +83,41 @@ class YasnoScheduleImageGeneratorImpl : LaunchCoroutineBean, YasnoScheduleImageG
             page.addStyleTag(Page.AddStyleTagOptions().setContent(css))
 
             setOutageHours(page, outageHourRanges)
+            setDates(page, mondayDate)
+            setTodayActive(page, mondayDate)
 
             return page.screenshot()
         }
+    }
+
+    private fun setTodayActive(page: Page, mondayDate: LocalDate) {
+        val todayDayOfWeek = Duration.between(
+            mondayDate.atStartOfDay(),
+            ZonedDateTime
+                .now()
+                .toLocalDate()
+                .atStartOfDay()
+        ).toDays()
+        if (todayDayOfWeek >= 7)
+            return
+
+        val element = queryDayOfWeek(page, todayDayOfWeek.toInt())
+        element.evaluate("node => node.classList.add('active')")
+    }
+
+    private fun setDates(page: Page, mondayDate: LocalDate) {
+        (0..6).forEach { dayOfWeek ->
+            val date = mondayDate.plusDays(dayOfWeek.toLong()).format(
+                DateTimeFormatter.ofPattern("dd.MM")
+            )
+            val element = queryDayOfWeek(page, dayOfWeek)
+            element.evaluate("node => { node.innerHTML = node.innerText + '<br>$date'}")
+        }
+    }
+
+    private fun queryDayOfWeek(page: Page, dayOfWeek: Int): ElementHandle {
+        val col = SCHEDULE_HTML_FIRST_DAY_OF_WEEK_INDEX + (dayOfWeek * SCHEDULE_HTML_DAY_COL_MULTIPLIER)
+        return page.querySelector(scheduleHtmlColSelector(col))
     }
 
     private fun setOutageHours(page: Page, outageHourRanges: List<IntRange>) {
@@ -104,6 +139,7 @@ class YasnoScheduleImageGeneratorImpl : LaunchCoroutineBean, YasnoScheduleImageG
 
         private const val SCHEDULE_HTML_COL_OUTAGE_CLASS_NAME = "FACTUAL_OUTAGE"
         private const val SCHEDULE_HTML_FIRST_HOUR_INDEX = 27
+        private const val SCHEDULE_HTML_FIRST_DAY_OF_WEEK_INDEX = 26
         private const val SCHEDULE_HTML_DAY_COL_MULTIPLIER = 25
         private const val VIEWPORT_WIDTH = 757
         private const val VIEWPORT_HEIGHT = 1100

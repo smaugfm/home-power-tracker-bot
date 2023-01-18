@@ -1,12 +1,9 @@
 package com.github.smaugfm.power.tracker.stats
 
 import assertk.assertThat
-import assertk.assertions.isEmpty
-import assertk.assertions.isEqualTo
-import assertk.assertions.isFalse
-import assertk.assertions.isNull
-import com.github.smaugfm.power.tracker.RepositoryTestBase
+import assertk.assertions.containsExactly
 import com.github.smaugfm.power.tracker.EventType
+import com.github.smaugfm.power.tracker.RepositoryTestBase
 import com.github.smaugfm.power.tracker.events.EventsService
 import com.github.smaugfm.power.tracker.stats.single.SingleEventStatsService
 import kotlinx.coroutines.flow.toList
@@ -46,26 +43,30 @@ class StatsServiceImplTest : RepositoryTestBase() {
 
         assertThat(runBlocking {
             service.calculate(get(1))
-        }).isEmpty()
+        }).containsExactly(EventStats.Single.First(true, EventType.ISP))
 
         assertThat(runBlocking {
             service.calculate(get(2))
-        }).isEmpty()
+        }).containsExactly(EventStats.Single.First(true, EventType.POWER))
 
-        val powerDown = runBlocking {
+        assertThat(runBlocking {
             service.calculate(get(3))
-        }[0] as EventStats.Single.LastInverseOnly
-        assertThat(powerDown.state).isFalse()
-        assertThat(powerDown.type).isEqualTo(EventType.POWER)
-        assertThat(powerDown.lastInverse).isEqualTo(Duration.ofDays(1).minusMinutes(1))
+        }).containsExactly(
+            EventStats.Single.Consecutive.Other(
+                false,
+                EventType.POWER,
+                Duration.ofDays(1).minusMinutes(1)
+            )
+        )
 
-        val ispDown = runBlocking {
+        assertThat(runBlocking {
             service.calculate(get(4))
-        }[0] as EventStats.Single.IspDownStats
-        assertThat(ispDown.state).isFalse()
-        assertThat(ispDown.type).isEqualTo(EventType.ISP)
-        assertThat(ispDown.lastInverse).isEqualTo(Duration.ofDays(4).plusHours(4))
-        assertThat(ispDown.lastUPSCharge).isEqualTo(Duration.ofDays(1).minusMinutes(1))
-        assertThat(ispDown.lastUPSOperation).isEqualTo(Duration.ofDays(3).plusHours(4))
+        }).containsExactly(
+            EventStats.Single.Consecutive.IspDown(
+                Duration.ofDays(1).minusMinutes(1),
+                Duration.ofDays(3).plusHours(4),
+                Duration.ofDays(4).plusHours(4),
+            )
+        )
     }
 }

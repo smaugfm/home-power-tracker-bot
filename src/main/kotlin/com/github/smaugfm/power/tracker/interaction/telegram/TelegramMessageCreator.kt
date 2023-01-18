@@ -18,13 +18,16 @@ class TelegramMessageCreator {
     private fun createText(stats: EventStats): List<String> =
         when (stats) {
             is EventStats.Single ->
-                listOf(simpleSingleEventText(stats), extendedSingleEventText(stats))
+                listOfNotNull(
+                    firstSingleEventText(stats),
+                    (stats as? EventStats.Single.Consecutive)?.let(::consecutiveSingleEventText)
+                )
 
             is EventStats.Summary -> summaryStatsText(stats)
             is EventStats.LastWeekPowerScheduleImage -> emptyList()
         }
 
-    private fun simpleSingleEventText(stats: EventStats.Single) =
+    private fun firstSingleEventText(stats: EventStats.Single) =
         when (stats.type) {
             EventType.POWER -> "${if (stats.state) "🟢" else "🔴"} Світло " +
                     if (stats.state) "відновлено" else "зникло"
@@ -33,9 +36,9 @@ class TelegramMessageCreator {
                     if (stats.state) "з'явився" else "зник"
         }
 
-    private fun extendedSingleEventText(stats: EventStats.Single) =
+    private fun consecutiveSingleEventText(stats: EventStats.Single.Consecutive) =
         when (stats) {
-            is EventStats.Single.LastInverseOnly -> {
+            is EventStats.Single.Consecutive.Other -> {
                 if (stats.state)
                     "Скільки не було: " + stats.lastInverse.humanReadable()
                 else
@@ -45,7 +48,7 @@ class TelegramMessageCreator {
                     } + stats.lastInverse.humanReadable()
             }
 
-            is EventStats.Single.IspDownStats -> {
+            is EventStats.Single.Consecutive.IspDown -> {
                 val str =
                     StringBuilder("Скільки був: ${stats.lastInverse.humanReadable()}")
                 if (stats.lastUPSOperation != null)

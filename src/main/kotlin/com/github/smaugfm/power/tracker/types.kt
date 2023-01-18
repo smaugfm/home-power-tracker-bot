@@ -3,6 +3,7 @@ package com.github.smaugfm.power.tracker
 import kotlinx.coroutines.CompletableDeferred
 import java.time.Duration
 import java.time.Instant
+import java.time.LocalDate
 
 data class Event(
     val id: EventId,
@@ -60,10 +61,6 @@ data class PeriodicStats(
     val medianPeriod: Duration
 )
 
-interface LastInverseStats {
-    val lastInverse: Duration
-}
-
 sealed class UserInteractionData(
     open val configId: ConfigId
 ) {
@@ -88,5 +85,6 @@ enum class YasnoGroup {
 data class ScheduleImageCreateRequest(
     val group: YasnoGroup,
     val outageHourRanges: List<IntRange>,
+    val mondayDate: LocalDate,
     val future: CompletableDeferred<ByteArray>
 )

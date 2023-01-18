@@ -1,7 +1,6 @@
 package com.github.smaugfm.power.tracker.stats
 
 import com.github.smaugfm.power.tracker.EventType
-import com.github.smaugfm.power.tracker.LastInverseStats
 import com.github.smaugfm.power.tracker.PeriodicStats
 import com.github.smaugfm.power.tracker.SummaryStatsPeriod
 import java.time.Duration
@@ -12,19 +11,29 @@ sealed class EventStats(
     sealed class Single(
         open val state: Boolean,
         type: EventType,
-        override val lastInverse: Duration
-    ) : EventStats(type), LastInverseStats {
-        data class LastInverseOnly(
+    ) : EventStats(type) {
+        data class First(
+            override val state: Boolean,
+            override val type: EventType
+        ) : Single(state, type)
+
+        sealed class Consecutive(
             override val state: Boolean,
             override val type: EventType,
-            override val lastInverse: Duration
-        ) : Single(state, type, lastInverse)
+            open val lastInverse: Duration
+        ): Single(state, type) {
+            data class Other(
+                override val state: Boolean,
+                override val type: EventType,
+                override val lastInverse: Duration
+            ) : Consecutive(state, type, lastInverse)
 
-        data class IspDownStats(
-            val lastUPSCharge: Duration?,
-            val lastUPSOperation: Duration?,
-            override val lastInverse: Duration
-        ) : Single(false, EventType.ISP, lastInverse)
+            data class IspDown(
+                val lastUPSCharge: Duration?,
+                val lastUPSOperation: Duration?,
+                override val lastInverse: Duration
+            ) : Consecutive(false, EventType.ISP, lastInverse)
+        }
     }
 
     data class Summary(

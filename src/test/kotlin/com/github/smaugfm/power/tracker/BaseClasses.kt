@@ -3,9 +3,8 @@ package com.github.smaugfm.power.tracker
 import com.github.smaugfm.power.tracker.persistence.ConfigEntity
 import com.github.smaugfm.power.tracker.persistence.ConfigsRepository
 import com.github.smaugfm.power.tracker.persistence.EventsRepository
-import org.h2.tools.DeleteDbFiles
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
 import org.springframework.boot.autoconfigure.liquibase.LiquibaseAutoConfiguration
@@ -15,6 +14,7 @@ import org.springframework.test.context.ActiveProfiles
 
 @ActiveProfiles("test")
 @SpringBootTest(classes = [Application::class])
+@ExtendWith(DeleteDbFilesExtension::class)
 class TestBase
 
 @EnableAutoConfiguration(exclude = [LiquibaseAutoConfiguration::class])
@@ -34,9 +34,11 @@ class RepositoryTestBase : TestBase() {
     fun beforeEach() {
         db.sql("set REFERENTIAL_INTEGRITY = false").then().block()
         db.sql("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES  where TABLE_SCHEMA='PUBLIC'")
-            .map { t, _ -> t.get(0, String::class.java) }
+            .map { t, _ -> t.get(0, String::class.java)!! }
             .all()
-            .filter { !(it?.startsWith("DATABASECHANELOG") ?: true) }
+            .filter { tableName ->
+                !tableName.lowercase().startsWith("databasechangelog")
+            }
             .flatMap {
                 db.sql("TRUNCATE TABLE $it")
                     .then()
@@ -77,13 +79,5 @@ class RepositoryTestBase : TestBase() {
                 null
             )
         ).block()!!
-
-    companion object {
-        @BeforeAll
-        @JvmStatic
-        fun deleteH2() {
-            DeleteDbFiles.main()
-        }
-    }
 }
 

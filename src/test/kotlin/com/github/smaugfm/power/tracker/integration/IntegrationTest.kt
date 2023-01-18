@@ -24,7 +24,6 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 @ActiveProfiles("integration")
 @DelicateCoroutinesApi
-@Disabled
 @ContextConfiguration(classes = [IntegrationTest.IntegrationConfig::class])
 class IntegrationTest : RepositoryTestBase() {
     @Autowired

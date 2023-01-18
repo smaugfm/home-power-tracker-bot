@@ -13,17 +13,20 @@ import org.springframework.stereotype.Service
 class SingleEventStatsService(private val service: EventsService) : StatsService {
 
     override suspend fun calculate(event: Event): List<EventStats.Single> {
-        val singleEventStats = when (event.type) {
-            EventType.POWER -> getLastInverseStats(event)
-            EventType.ISP ->
-                if (event.state) getLastInverseStats(event) else getIspDownStats(event)
-        } ?: return emptyList()
+        val prev = service.findPreviousOfSameType(event)
+            ?: return listOf(EventStats.Single.First(event.state, event.type))
 
-        return listOf(singleEventStats)
+        val other = getOtherConsecutiveStats(prev, event)
+        if (!event.state && event.type == EventType.ISP)
+            return listOf(getIspDownStats(other, event))
+
+        return listOf(other)
     }
 
-    private suspend fun getIspDownStats(event: Event): EventStats.Single? {
-        val lastInverseStats = getLastInverseStats(event) ?: return null
+    private suspend fun getIspDownStats(
+        consecutive: EventStats.Single.Consecutive,
+        event: Event
+    ): EventStats.Single.Consecutive {
         val currentState = service.getCurrentState(event.configId)
         if (currentState.hasPower == false) {
             val lastPowerDown =
@@ -33,23 +36,21 @@ class SingleEventStatsService(private val service: EventsService) : StatsService
 
             if (lastPowerDown != null) {
                 if (lastPowerUp != null)
-                    return EventStats.Single.IspDownStats(
+                    return EventStats.Single.Consecutive.IspDown(
                         lastUPSCharge = lastPowerDown.since(lastPowerUp),
                         lastUPSOperation = event.since(lastPowerDown),
-                        lastInverse = lastInverseStats.lastInverse
+                        lastInverse = consecutive.lastInverse
                     )
-                return EventStats.Single.IspDownStats(
+                return EventStats.Single.Consecutive.IspDown(
                     lastUPSCharge = null,
                     lastUPSOperation = event.since(lastPowerDown),
-                    lastInverseStats.lastInverse
+                    consecutive.lastInverse
                 )
             }
         }
-        return lastInverseStats
+        return consecutive
     }
 
-    private suspend fun getLastInverseStats(event: Event): EventStats.Single.LastInverseOnly? {
-        val prev = service.findPreviousOfSameType(event) ?: return null
-        return EventStats.Single.LastInverseOnly(event.state, event.type, event.since(prev))
-    }
+    private suspend fun getOtherConsecutiveStats(prev: Event, event: Event) =
+        EventStats.Single.Consecutive.Other(event.state, event.type, event.since(prev))
 }

@@ -13,7 +13,6 @@ class PingImplTest : NoLiquibaseTestBase() {
     @Autowired
     private lateinit var service: Ping
 
-    @Disabled
     @Test
     fun networkTest() {
         runBlocking {

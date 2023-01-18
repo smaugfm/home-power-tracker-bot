@@ -42,9 +42,6 @@ class EventsServiceImpl(
             time
         ).mapFluxDto()
 
-    override suspend fun getLastN(number: Int): Flow<Event> =
-        eventsRepository.findAllByOrderByCreatedDesc(PageRequest.of(0, number)).mapFluxDto()
-
     override suspend fun getEventsOfTypeBetween(
         configId: ConfigId,
         type: EventType,

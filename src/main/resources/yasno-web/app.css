@@ -30375,6 +30375,11 @@ table td:last-child {
   background: rgba(253, 214, 49, 0.2);
   color: #fdd631;
 }
+
+.electricity-outages-schedule .schedule .col.blackouts.FACTUAL_OUTAGE {
+  color: #fd3131;
+}
+
 .electricity-outages-schedule
   .schedule
   .col.active.blackouts.POSSIBLE_OUTAGE
@@ -30443,7 +30448,6 @@ table td:last-child {
 }
 @media screen and (max-width: 800px) {
   .electricity-outages-schedule .schedule .col.legend {
-    writing-mode: vertical-rl;
   }
 }
 @media screen and (max-width: 800px) {

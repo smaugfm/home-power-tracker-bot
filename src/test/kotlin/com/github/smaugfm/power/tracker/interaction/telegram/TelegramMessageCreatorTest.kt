@@ -17,7 +17,7 @@ class TelegramMessageCreatorTest : NoLiquibaseTestBase() {
         println(
             creator.getTelegramMessage(
                 listOf(
-                    EventStats.Single.LastInverseOnly(
+                    EventStats.Single.Consecutive.Other(
                         false,
                         EventType.POWER,
                         Duration.ofDays(3)
@@ -32,7 +32,7 @@ class TelegramMessageCreatorTest : NoLiquibaseTestBase() {
         println(
             creator.getTelegramMessage(
                 listOf(
-                    EventStats.Single.LastInverseOnly(
+                    EventStats.Single.Consecutive.Other(
                         true,
                         EventType.ISP,
                         Duration.ofDays(3)
@@ -47,7 +47,7 @@ class TelegramMessageCreatorTest : NoLiquibaseTestBase() {
         println(
             creator.getTelegramMessage(
                 listOf(
-                    EventStats.Single.IspDownStats(
+                    EventStats.Single.Consecutive.IspDown(
                         Duration.ofDays(3)
                             .plusHours(21)
                             .plusMinutes(11)

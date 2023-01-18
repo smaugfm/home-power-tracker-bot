@@ -8,6 +8,7 @@ import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import java.nio.file.Paths
+import java.time.LocalDate
 import kotlin.io.path.writeBytes
 
 class YasnoScheduleImageGeneratorImplTest : NoLiquibaseTestBase() {
@@ -20,7 +21,9 @@ class YasnoScheduleImageGeneratorImplTest : NoLiquibaseTestBase() {
         runBlocking {
             val job = launch { service.launch(this) }
             val bytes = service.createSchedule(
-                YasnoGroup.Group1, listOf(
+                YasnoGroup.Group1,
+                LocalDate.of(2023, 1, 16),
+                listOf(
                     IntRange(0, 23),
                     IntRange(47, 48),
                     IntRange(144, 167),

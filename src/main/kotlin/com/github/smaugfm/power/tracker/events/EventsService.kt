@@ -8,7 +8,6 @@ interface EventsService {
     suspend fun getEvent(eventId: EventId): Event?
     suspend fun deleteEvent(eventId: EventId)
     suspend fun getEventsAfter(configId: ConfigId, time: Instant): Flow<Event>
-    suspend fun getLastN(number: Int): Flow<Event>
     suspend fun getEventsOfTypeBetween(
         configId: ConfigId,
         type: EventType,

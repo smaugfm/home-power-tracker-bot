@@ -20,8 +20,3 @@ data class NetworkStabilityProperties(
     val consecutiveTriesToConsiderOnline: Int,
     val hosts: List<String>,
 )
-
-@ConfigurationProperties(prefix = "app.startup")
-data class StartupProperties(
-    val updateLastEvents: Int = 0
-)

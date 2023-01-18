@@ -16,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.TestPropertySource
 
 @TestPropertySource(properties = ["app.loop.turn-off-duration-threshold=200ms"])
-@Disabled
 class MonitoringLoopTest : RepositoryTestBase() {
 
     @Autowired

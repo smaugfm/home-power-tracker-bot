@@ -32,11 +32,15 @@ class ScheduleImageStatsService(
         configId: ConfigId,
         enrichedPeriod: EnrichedSummaryStatsPeriod
     ): LastWeekPowerScheduleImage? {
+        if (enrichedPeriod.period !is SummaryStatsPeriod.LastWeek)
+            return null
+
         val hours = calculateOutageHours(enrichedPeriod)
         val yasnoGroup = configService.getYasnoGroup(configId) ?: return null
 
         val bytes = scheduleImageGenerator.createSchedule(
             yasnoGroup,
+            enrichedPeriod.start.atZone(ZoneId.systemDefault()).toLocalDate(),
             hours
         )
         return LastWeekPowerScheduleImage(

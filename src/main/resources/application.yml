@@ -15,8 +15,6 @@ app:
     reachable-timeout: 10s
     tries: 3
     turn-off-duration-threshold: 2m
-  startup:
-    update-last-events: 0
   network-stability:
     interval: 2s
     timeout: 1s

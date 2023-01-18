@@ -1,31 +1,17 @@
 package com.github.smaugfm.power.tracker.scripts
 
 import com.beust.klaxon.Klaxon
-import com.github.smaugfm.power.tracker.NoLiquibaseTestBase
-import com.github.smaugfm.power.tracker.interaction.telegram.TelegramUserInteractionOperations
 import com.github.smaugfm.power.tracker.persistence.*
-import kotlinx.coroutines.flow.toList
-import kotlinx.coroutines.reactive.asFlow
-import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.r2dbc.core.DatabaseClient
-import org.springframework.test.context.TestPropertySource
 import reactor.core.publisher.Flux
-import java.time.Duration
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
-@TestPropertySource(
-    properties = [
-        "spring.r2dbc.url=r2dbc:postgresql://localhost:5432/postgres",
-        "spring.r2dbc.username=postgres",
-    ]
-)
 @Disabled
-class Migration : NoLiquibaseTestBase() {
+class MigrationScript : ScriptBase() {
     @Autowired
     private lateinit var configs: ConfigsRepository
 
@@ -112,7 +98,7 @@ class Migration : NoLiquibaseTestBase() {
     private fun getOldDb() =
         Klaxon()
             .parseArray<OldDbConfig>(
-                Migration::javaClass
+                MigrationScript::javaClass
                     .javaClass
                     .classLoader
                     .getResource("db.json")
