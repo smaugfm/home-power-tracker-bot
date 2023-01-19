@@ -10,6 +10,10 @@ import com.github.smaugfm.power.tracker.spring.LaunchCoroutineBean
 import com.github.smaugfm.power.tracker.spring.MainLoopProperties
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.reactive.asFlow
 import mu.KotlinLogging
 import org.springframework.stereotype.Component
 import java.time.Duration
@@ -33,23 +37,26 @@ class MonitoringLoop(
         val stateLogged = mutableMapOf<String, Boolean>()
 
         while (true) {
-            try {
-                if (!networkStability.waitStable())
-                    continue
+            if (!networkStability.waitStable())
+                continue
 
-                configs.getAll().collect { config ->
+            configs.getAll()
+                .asFlow()
+                .map { config ->
+                    scope.launch {
+                        val prevState = events.getCurrentState(config.id)
+                        val currentState = ping.ping(this, config)
+                        logInitialState(stateLogged, config, prevState, currentState)
 
-                    val prevState = events.getCurrentState(config.id)
-                    val currentState = ping.ping(scope, config)
-                    logInitialState(stateLogged, config, prevState, currentState)
-
-                    if (prevState != currentState) {
-                        processStateChange(config, prevState, currentState)
+                        if (prevState != currentState) {
+                            processStateChange(config, prevState, currentState)
+                        }
                     }
+                }.catch {
+                    log.error(it) { "Error in main loop while processing $this" }
+                }.collect {
+                    it.join()
                 }
-            } catch (e: Throwable) {
-                log.error(e) { "Error in main loop." }
-            }
 
             delay(props.interval.toKotlinDuration())
         }
