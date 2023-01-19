@@ -7,6 +7,6 @@ import kotlinx.coroutines.flow.Flow
 import reactor.core.publisher.Flux
 
 interface ConfigService {
-    suspend fun getAll(): Flux<Config>
+    suspend fun getAll(): Flow<Config>
     suspend fun getYasnoGroup(id: ConfigId): YasnoGroup?
 }

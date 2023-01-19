@@ -15,7 +15,7 @@ class ConfigServiceImpl(
     private val repository: ConfigsRepository
 ) : ConfigService {
     override suspend fun getAll() =
-        repository.findAll().map(::mapDto)
+        repository.findAll().asFlow().map(::mapDto)
 
 
     override suspend fun getYasnoGroup(id: ConfigId) =

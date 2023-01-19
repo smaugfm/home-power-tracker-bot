@@ -9,11 +9,11 @@ import com.github.smaugfm.power.tracker.network.PingService
 import com.github.smaugfm.power.tracker.spring.LaunchCoroutineBean
 import com.github.smaugfm.power.tracker.spring.MainLoopProperties
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.reactive.asFlow
 import mu.KotlinLogging
 import org.springframework.stereotype.Component
 import java.time.Duration
@@ -41,9 +41,8 @@ class MonitoringLoop(
                 continue
 
             configs.getAll()
-                .asFlow()
                 .map { config ->
-                    scope.launch {
+                    scope.launch(Dispatchers.IO) {
                         val prevState = events.getCurrentState(config.id)
                         val currentState = ping.ping(this, config)
                         logInitialState(stateLogged, config, prevState, currentState)
