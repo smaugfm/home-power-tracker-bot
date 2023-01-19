@@ -15,18 +15,19 @@ class DeletionLoop(
     private val events: EventsService,
 ) : LaunchCoroutineBean {
     override suspend fun launch(scope: CoroutineScope) {
-        userInteraction.deletionFlow().collect { deletionRequest ->
-            val event = events.getEvent(deletionRequest.eventId)
-            if (event == null) {
-                log.warn { "Missing event for request=$deletionRequest" }
-                return@collect
-            }
-            userInteraction.deleteForEvent(event)
-            events.deleteEvent(deletionRequest.eventId)
+        userInteraction.deletionFlow()
+            .collect { deletionRequest ->
+                val event = events.getEvent(deletionRequest.eventId)
+                if (event == null) {
+                    log.warn { "Missing event for request=$deletionRequest" }
+                    return@collect
+                }
+                userInteraction.deleteForEvent(event)
+                events.deleteEvent(deletionRequest.eventId)
 
-            events
-                .getEventsAfter(event.configId, event.time)
-                .collect(userInteraction::updateForEvent)
-        }
+                events
+                    .getEventsAfter(event.configId, event.time)
+                    .collect(userInteraction::updateForEvent)
+            }
     }
 }

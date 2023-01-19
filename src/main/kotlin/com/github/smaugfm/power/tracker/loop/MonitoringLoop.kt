@@ -112,6 +112,11 @@ class MonitoringLoop(
                     excl.isNotEmpty()
                 }
         if (toIgnore.isNotEmpty()) {
+            if (toIgnore.filterIsInstance<NewEvent.Initial>().isNotEmpty()) {
+                log.warn {
+                    "This should not happen. Detected initial new events in the list to ignore: $toIgnore"
+                }
+            }
             log.info {
                 "Detected new events that occurred faster than ${props.turnOffDurationThreshold}. " +
                         "Ignoring new events: ${toIgnore.toList()}. Deleting old events: $toDelete"

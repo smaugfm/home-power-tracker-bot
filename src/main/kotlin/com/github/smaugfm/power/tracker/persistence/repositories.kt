@@ -1,7 +1,6 @@
 package com.github.smaugfm.power.tracker.persistence
 
 import com.github.smaugfm.power.tracker.EventType
-import org.springframework.data.domain.Pageable
 import org.springframework.data.r2dbc.repository.Query
 import org.springframework.data.r2dbc.repository.R2dbcRepository
 import reactor.core.publisher.Flux
@@ -44,8 +43,13 @@ interface EventsRepository : R2dbcRepository<EventEntity, Long> {
         configId: Long,
         after: Instant
     ): Flux<EventEntity>
+}
 
-    fun findAllByOrderByCreatedDesc(pageable: Pageable): Flux<EventEntity>
+interface InitialEventsRepository : R2dbcRepository<InitialEventEntity, Long> {
+    fun findTop1ByConfigIdAndTypeOrderByCreatedDesc(
+        configId: Long,
+        eventType: EventType
+    ): Mono<InitialEventEntity>
 }
 
 interface TelegramChatIdsRepository : R2dbcRepository<TelegramChatIdEntity, Long> {

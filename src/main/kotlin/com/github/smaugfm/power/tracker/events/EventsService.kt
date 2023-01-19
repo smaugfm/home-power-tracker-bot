@@ -21,7 +21,7 @@ interface EventsService {
         configId: ConfigId
     ): List<NewEvent>
 
-    fun addEvents(events: List<NewEvent>): Flow<Event>
+    suspend fun addEvents(events: List<NewEvent>): Flow<Event>
 
     suspend fun getCurrentState(configId: ConfigId): PowerIspState
 

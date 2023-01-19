@@ -39,6 +39,21 @@ data class EventEntity(
     lateinit var created: Instant
 }
 
+@Table(name = "tb_initial_events")
+data class InitialEventEntity(
+    @Column
+    val state: Boolean,
+    @Column
+    val type: EventType,
+    @Column("config_id")
+    val configId: Long,
+    @Id
+    var id: Long = 0,
+) {
+    @CreatedDate
+    lateinit var created: Instant
+}
+
 @Table(name = "tb_telegram_chat_ids")
 data class TelegramChatIdEntity(
     @Id

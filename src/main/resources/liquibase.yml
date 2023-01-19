@@ -153,3 +153,46 @@ databaseChangeLog:
               - column:
                   descending: true
                   name: created
+  - changeSet:
+      id: 04
+      author: smaugfm
+      changes:
+        - createSequence:
+            sequenceName: sq_tb_initial_events
+            startValue: 1
+            incrementBy: 1
+            cacheSize: 1
+        - createTable:
+            tableName: tb_initial_events
+            columns:
+              - column:
+                  name: id
+                  type: bigint
+                  defaultValueComputed: nextval('sq_tb_initial_events')
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pkey_tb_initial_events
+              - column:
+                  name: config_id
+                  type: bigint
+                  constraints:
+                    nullable: false
+                    foreignKeyName: fkey_tb_initial_events_tb_configs
+                    references: tb_configs(id)
+                    deleteCascade: true
+              - column:
+                  name: type
+                  type: varchar
+                  constraints:
+                    nullable: false
+              - column:
+                  name: state
+                  type: boolean
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created
+                  type: timestamp with time zone
+                  constraints:
+                    nullable: false
+

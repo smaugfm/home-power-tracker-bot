@@ -2,9 +2,7 @@ package com.github.smaugfm.power.tracker.events
 
 import assertk.all
 import assertk.assertThat
-import assertk.assertions.hasSize
-import assertk.assertions.isEqualTo
-import assertk.assertions.isGreaterThanOrEqualTo
+import assertk.assertions.*
 import com.github.smaugfm.power.tracker.PowerIspState
 import com.github.smaugfm.power.tracker.RepositoryTestBase
 import kotlinx.coroutines.flow.toList
@@ -55,21 +53,38 @@ class EventsServiceImplTest : RepositoryTestBase() {
     fun calculateLaterEventsTest() {
         val configId = saveConfig1().id
 
-        val prev = PowerIspState(hasPower = null, hasIsp = null)
-        val next = PowerIspState(hasPower = true, hasIsp = true)
+        val onState = PowerIspState(hasPower = true, hasIsp = true)
+
+        val initialEvents = runBlocking {
+            service.addEvents(
+                service.calculateNewEvents(
+                    PowerIspState(hasPower = null, hasIsp = null),
+                    onState, configId
+                ).toList()
+            )
+                .toList()
+        }
+        assertThat(initialEvents).isEmpty()
+        assertThat(runBlocking { service.findAllEvents(configId).toList() }).isEmpty()
 
         val now = Instant.now()
         val events = runBlocking {
-            service.addEvents(service.calculateNewEvents(prev, next, configId).toList())
+            service.addEvents(
+                service.calculateNewEvents(
+                    onState,
+                    PowerIspState(false, false),
+                    configId
+                ).toList()
+            )
                 .toList()
         }
         assertThat(events).hasSize(2)
         assertThat(events[0].id).isEqualTo(1)
-        assertThat(events[0].state).isEqualTo(true)
+        assertThat(events[0].state).isFalse()
         assertThat(events[0].configId).isEqualTo(configId)
         assertThat(events[0].time).isGreaterThanOrEqualTo(now)
         assertThat(events[1].id).isEqualTo(2)
-        assertThat(events[1].state).isEqualTo(true)
+        assertThat(events[1].state).isFalse()
         assertThat(events[1].configId).isEqualTo(configId)
         assertThat(events[1].time).all {
             isGreaterThanOrEqualTo(now)

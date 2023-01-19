@@ -11,6 +11,7 @@ import io.mockk.coVerify
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.RepeatedTest
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.test.context.TestPropertySource
@@ -88,7 +89,7 @@ class MonitoringLoopTest : RepositoryTestBase() {
             )
         }
 
-        coVerify(exactly = 6) { userInteraction.postForEvent(any()) }
+        coVerify(exactly = 4) { userInteraction.postForEvent(any()) }
         coVerify(exactly = 4) { userInteraction.deleteForEvent(any()) }
     }
 }

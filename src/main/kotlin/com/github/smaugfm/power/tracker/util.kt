@@ -1,8 +1,5 @@
 package com.github.smaugfm.power.tracker
 
-import io.ktor.client.*
-import io.ktor.client.engine.cio.*
-import io.ktor.client.request.forms.*
 import net.time4j.PrettyTime
 import java.time.Duration
 import java.time.temporal.ChronoUnit
@@ -14,7 +11,19 @@ fun Int.isZero() = this == 0
 
 fun Double.format(digits: Int = 2) = "%.${digits}f".format(this)
 
-fun List<Long>.median(): Double {
+fun Collection<NewEvent>.separateInitial(): Pair<List<NewEvent.Initial>, List<NewEvent.Common>> {
+    val initial: MutableList<NewEvent.Initial> = mutableListOf()
+    val common: MutableList<NewEvent.Common> = mutableListOf()
+    this.forEach {
+        when (it) {
+            is NewEvent.Common -> common.add(it)
+            is NewEvent.Initial -> initial.add(it)
+        }
+    }
+    return Pair(initial, common)
+}
+
+fun Collection<Long>.median(): Double {
     val sorted = this.sorted()
 
     return if (sorted.size % 2 == 0) {
@@ -25,18 +34,14 @@ fun List<Long>.median(): Double {
 }
 
 inline fun <T : Any> T?.ifNull(action: () -> Unit) = this.also {
-    if (it == null)
-        action()
+    if (it == null) action()
 }
 
-fun getResourceAsText(path: String): String? =
-    object {}.javaClass.classLoader.getResource(path)?.readText()
+fun getResourceAsText(path: String): String? = object {}.javaClass.classLoader.getResource(path)?.readText()
 
 fun Duration.humanReadable(): String {
     val truncated = this.truncatedTo(ChronoUnit.MINUTES)
-    return if (truncated < minute)
-        "меньше хвилини"
-    else
-        PrettyTime.of(Locale("uk", "UA")).print(truncated)
+    return if (truncated < minute) "меньше хвилини"
+    else PrettyTime.of(Locale("uk", "UA")).print(truncated)
 
 }

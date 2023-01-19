@@ -15,11 +15,23 @@ data class Event(
     fun since(earlier: Event): Duration = Duration.between(earlier.time, time)
 }
 
-data class NewEvent(
-    val state: Boolean,
-    val type: EventType,
-    val configId: ConfigId,
-)
+sealed class NewEvent(
+    open val state: Boolean,
+    open val type: EventType,
+    open val configId: ConfigId,
+) {
+    data class Common(
+        override val state: Boolean,
+        override val type: EventType,
+        override val configId: ConfigId,
+    ) : NewEvent(state, type, configId)
+
+    data class Initial(
+        override val state: Boolean,
+        override val type: EventType,
+        override val configId: ConfigId,
+    ) : NewEvent(state, type, configId)
+}
 
 typealias EventId = Long
 typealias ConfigId = Long

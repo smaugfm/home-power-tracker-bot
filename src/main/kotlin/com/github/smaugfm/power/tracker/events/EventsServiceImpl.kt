@@ -3,12 +3,14 @@ package com.github.smaugfm.power.tracker.events
 import com.github.smaugfm.power.tracker.*
 import com.github.smaugfm.power.tracker.persistence.EventEntity
 import com.github.smaugfm.power.tracker.persistence.EventsRepository
+import com.github.smaugfm.power.tracker.persistence.InitialEventEntity
+import com.github.smaugfm.power.tracker.persistence.InitialEventsRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.reactive.asFlow
 import kotlinx.coroutines.reactive.awaitFirstOrNull
+import kotlinx.coroutines.reactive.awaitLast
 import kotlinx.coroutines.reactor.awaitSingleOrNull
 import mu.KotlinLogging
-import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import reactor.core.publisher.Flux
 import java.time.Instant
@@ -17,7 +19,8 @@ private val log = KotlinLogging.logger { }
 
 @Service
 class EventsServiceImpl(
-    private val eventsRepository: EventsRepository
+    private val eventsRepository: EventsRepository,
+    private val initialEventsRepository: InitialEventsRepository,
 ) : EventsService {
 
     override suspend fun findAllEvents(configId: ConfigId): Flow<Event> =
@@ -65,24 +68,71 @@ class EventsServiceImpl(
         currentState: PowerIspState,
         configId: ConfigId,
     ): List<NewEvent> {
-        return calculateEvents(prevState, currentState, configId)
+        return listOfNotNull(
+            if (prevState.hasPower != currentState.hasPower) {
+                if (prevState.hasPower == null)
+                    NewEvent.Initial(
+                        currentState.hasPower!!,
+                        EventType.POWER,
+                        configId
+                    )
+                else
+                    NewEvent.Common(
+                        currentState.hasPower!!,
+                        EventType.POWER,
+                        configId
+                    )
+            } else null,
+            if (prevState.hasIsp != currentState.hasIsp) {
+                if (prevState.hasIsp == null)
+                    NewEvent.Initial(
+                        currentState.hasIsp!!,
+                        EventType.ISP,
+                        configId
+                    )
+                else
+                    NewEvent.Common(
+                        currentState.hasIsp!!,
+                        EventType.ISP,
+                        configId
+                    )
+            } else null
+        )
     }
 
-    override fun addEvents(events: List<NewEvent>): Flow<Event> {
-        log.info { "Adding new events: $events" }
+    override suspend fun addEvents(events: List<NewEvent>): Flow<Event> {
+        val (initial, common) = events.separateInitial()
+        log.info { "Adding new events: common events $common, initial events $initial" }
+
+        if (initial.isNotEmpty())
+            initialEventsRepository
+                .saveAll(initial.map(::mapNewInitialEvent))
+                .awaitLast()
+
         return eventsRepository
-            .saveAll(events.map { EventEntity(it.state, it.type, it.configId) })
+            .saveAll(common.map(::mapNewEvent))
             .mapFluxDto()
     }
 
     override suspend fun getCurrentState(configId: ConfigId): PowerIspState {
-        val power =
+        var power =
             eventsRepository.findTop1ByConfigIdAndTypeOrderByCreatedDesc(
                 configId,
                 EventType.POWER
             ).awaitFirstOrNull()?.state
-        val isp =
+        var isp =
             eventsRepository.findTop1ByConfigIdAndTypeOrderByCreatedDesc(
+                configId,
+                EventType.ISP
+            ).awaitFirstOrNull()?.state
+
+        if (power == null)
+            power = initialEventsRepository.findTop1ByConfigIdAndTypeOrderByCreatedDesc(
+                configId,
+                EventType.POWER
+            ).awaitFirstOrNull()?.state
+        if (isp == null)
+            isp = initialEventsRepository.findTop1ByConfigIdAndTypeOrderByCreatedDesc(
                 configId,
                 EventType.ISP
             ).awaitFirstOrNull()?.state
@@ -90,26 +140,9 @@ class EventsServiceImpl(
         return PowerIspState(power, isp)
     }
 
-    private fun calculateEvents(
-        prevState: PowerIspState,
-        currentState: PowerIspState,
-        configId: ConfigId
-    ): List<NewEvent> {
-        return listOfNotNull(
-            if (prevState.hasPower != currentState.hasPower) NewEvent(
-                currentState.hasPower!!,
-                EventType.POWER,
-                configId
-            ) else null,
-            if (prevState.hasIsp != currentState.hasIsp) NewEvent(
-                currentState.hasIsp!!,
-                EventType.ISP,
-                configId
-            ) else null
-        )
-    }
-
     private fun mapDto(e: EventEntity) = Event(e.id, e.state, e.type, e.configId, e.created)
+    private fun mapNewInitialEvent(e: NewEvent.Initial) = InitialEventEntity(e.state, e.type, e.configId)
+    private fun mapNewEvent(e: NewEvent.Common) = EventEntity(e.state, e.type, e.configId)
 
     private fun Flux<EventEntity>.mapFluxDto(): Flow<Event> =
         this.map(this@EventsServiceImpl::mapDto).asFlow()
