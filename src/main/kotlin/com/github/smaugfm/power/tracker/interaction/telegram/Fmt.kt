@@ -1,13 +1,13 @@
 package com.github.smaugfm.power.tracker.interaction.telegram
 
-object Fmt {
-    private fun escapeInternal(text: String, escapeChars: String): String {
-        return text.replace(Regex("[$escapeChars\\\\]"), "\\\\$0")
-    }
+import dev.inmo.tgbotapi.utils.EntitiesBuilder
 
-    fun escape(text: String): String {
-        return text.replace(Regex("[_*\\[\\]()~`>#+\\-=|{}.!]"), "\\\\$0")
-    }
+object Fmt {
+    private fun escapeInternal(text: String, escapeChars: String): String =
+        text.replace(Regex("[$escapeChars\\\\]"), "\\\\$0")
+
+    fun escape(text: String): String =
+        text.replace(Regex("[_*\\[\\]()~`>#+\\-=|{}.!]"), "\\\\$0")
 
     fun bold(text: String) = "*${text}*"
     fun italic(text: String) = "_${text}_"

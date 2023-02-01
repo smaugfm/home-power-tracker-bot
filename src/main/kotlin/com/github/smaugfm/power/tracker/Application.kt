@@ -1,7 +1,7 @@
 package com.github.smaugfm.power.tracker
 
 import com.github.smaugfm.power.tracker.spring.LaunchCoroutineBean
-import com.github.smaugfm.power.tracker.spring.MainLoopProperties
+import com.github.smaugfm.power.tracker.spring.LoopProperties
 import com.github.smaugfm.power.tracker.spring.NetworkStabilityProperties
 import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
@@ -18,7 +18,7 @@ import org.springframework.data.r2dbc.repository.config.EnableR2dbcRepositories
 @EnableR2dbcAuditing
 @EnableConfigurationProperties(
     value =
-    [MainLoopProperties::class, NetworkStabilityProperties::class]
+    [LoopProperties::class, NetworkStabilityProperties::class]
 )
 class Application {
     companion object {

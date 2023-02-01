@@ -1,8 +1,7 @@
 package com.github.smaugfm.power.tracker.network
 
-import com.github.smaugfm.power.tracker.Config
 import com.github.smaugfm.power.tracker.PowerIspState
-import com.github.smaugfm.power.tracker.spring.MainLoopProperties
+import com.github.smaugfm.power.tracker.spring.LoopProperties
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.awaitAll
 import org.springframework.stereotype.Service
@@ -10,24 +9,24 @@ import org.springframework.stereotype.Service
 @Service
 class PingServiceImpl(
     protected val ping: Ping,
-    private val props: MainLoopProperties,
+    private val props: LoopProperties,
 ) : PingService {
-    override suspend fun ping(scope: CoroutineScope, config: Config) =
-        getState(scope, config)
+    override suspend fun ping(scope: CoroutineScope, address: String, port: Int?) =
+        getState(scope, address, port)
 
-    private suspend fun getState(scope: CoroutineScope, config: Config) =
-        if (config.port != null) {
+    private suspend fun getState(scope: CoroutineScope, address: String, port: Int?) =
+        if (port != null) {
             val (power, isp) = listOf(
                 ping.isTcpReachable(
                     scope,
-                    config.address,
-                    config.port,
+                    address,
+                    port,
                     props.reachableTimeout,
                     props.tries,
                 ),
                 ping.isIcmpReachable(
                     scope,
-                    config.address,
+                    address,
                     props.reachableTimeout,
                     props.tries
                 )
@@ -39,7 +38,7 @@ class PingServiceImpl(
             PowerIspState(
                 ping.isIcmpReachable(
                     scope,
-                    config.address,
+                    address,
                     props.reachableTimeout,
                     props.tries
                 ).await(),

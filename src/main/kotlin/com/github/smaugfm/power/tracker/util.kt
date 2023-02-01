@@ -1,5 +1,9 @@
 package com.github.smaugfm.power.tracker
 
+import dev.inmo.tgbotapi.extensions.behaviour_builder.BehaviourContext
+import dev.inmo.tgbotapi.extensions.behaviour_builder.expectations.waitText
+import dev.inmo.tgbotapi.requests.abstracts.Request
+import kotlinx.coroutines.flow.firstOrNull
 import net.time4j.PrettyTime
 import java.time.Duration
 import java.time.temporal.ChronoUnit
@@ -45,3 +49,36 @@ fun Duration.humanReadable(): String {
     else PrettyTime.of(Locale("uk", "UA")).print(truncated)
 
 }
+
+fun String.yesNoToBoolean() =
+    when (this) {
+        "Так" -> true
+        "Ні" -> false
+        else -> throw IllegalArgumentException("Cannot parse yes/no: $this")
+    }
+
+suspend fun BehaviourContext.waitTextRegex(
+    initRequest: Request<*>? = null,
+    check: List<Regex>,
+    illegalHandler: suspend BehaviourContext.() -> Unit,
+    exitCommand: String = "exit",
+): String? {
+    var text: String?
+    do {
+        text = waitText(initRequest) { null }.firstOrNull()?.text
+        if (text == "/$exitCommand")
+            return null
+        if (text == null || check.any { !it.matches(text) })
+            illegalHandler()
+        else
+            break
+    } while (true)
+    return text
+}
+
+suspend fun BehaviourContext.waitTextRegex(
+    initRequest: Request<*>? = null,
+    check: Regex,
+    illegalHandler: suspend BehaviourContext.() -> Unit,
+    exitCommand: String = "exit",
+): String? = waitTextRegex(initRequest, listOf(check), illegalHandler, exitCommand)

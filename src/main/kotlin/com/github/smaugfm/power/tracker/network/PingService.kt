@@ -5,5 +5,5 @@ import com.github.smaugfm.power.tracker.PowerIspState
 import kotlinx.coroutines.CoroutineScope
 
 interface PingService {
-    suspend fun ping(scope: CoroutineScope, config: Config): PowerIspState
+    suspend fun ping(scope: CoroutineScope, address: String, port: Int?): PowerIspState
 }

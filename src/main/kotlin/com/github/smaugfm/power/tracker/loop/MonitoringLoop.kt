@@ -7,7 +7,7 @@ import com.github.smaugfm.power.tracker.interaction.UserInteractionService
 import com.github.smaugfm.power.tracker.network.NetworkStabilityService
 import com.github.smaugfm.power.tracker.network.PingService
 import com.github.smaugfm.power.tracker.spring.LaunchCoroutineBean
-import com.github.smaugfm.power.tracker.spring.MainLoopProperties
+import com.github.smaugfm.power.tracker.spring.LoopProperties
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -29,7 +29,7 @@ class MonitoringLoop(
     private val networkStability: NetworkStabilityService,
     private val events: EventsService,
     private val userInteraction: UserInteractionService,
-    private val props: MainLoopProperties
+    private val props: LoopProperties
 ) : LaunchCoroutineBean {
     private val prevEventsMap = mutableMapOf<ConfigId, Map<EventType, Event>>()
 
@@ -44,7 +44,7 @@ class MonitoringLoop(
                 .map { config ->
                     scope.launch(Dispatchers.IO) {
                         val prevState = events.getCurrentState(config.id)
-                        val currentState = ping.ping(this, config)
+                        val currentState = ping.ping(this, config.address, config.port)
                         logInitialState(stateLogged, config, prevState, currentState)
 
                         if (prevState != currentState) {

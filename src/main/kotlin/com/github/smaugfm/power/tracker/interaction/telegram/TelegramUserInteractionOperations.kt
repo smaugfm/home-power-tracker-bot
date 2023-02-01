@@ -3,6 +3,7 @@ package com.github.smaugfm.power.tracker.interaction.telegram
 import com.github.smaugfm.power.tracker.*
 import com.github.smaugfm.power.tracker.UserInteractionData.TelegramUserInteractionData
 import com.github.smaugfm.power.tracker.interaction.UserInteractionOperations
+import com.github.smaugfm.power.tracker.persistence.TelegramChatIdEntity
 import com.github.smaugfm.power.tracker.persistence.TelegramChatIdsRepository
 import com.github.smaugfm.power.tracker.persistence.TelegramMessageEntity
 import com.github.smaugfm.power.tracker.persistence.TelegramMessagesRepository
@@ -25,7 +26,6 @@ import dev.inmo.tgbotapi.utils.RiskFeature
 import io.ktor.utils.io.*
 import io.ktor.utils.io.core.*
 import io.ktor.utils.io.streams.*
-import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.reactive.asFlow
@@ -41,7 +41,6 @@ private val log = KotlinLogging.logger { }
 
 @Profile("!test")
 @Component
-@FlowPreview
 @OptIn(RiskFeature::class)
 class TelegramUserInteractionOperations(
     private val bot: TelegramBot,
@@ -288,6 +287,18 @@ class TelegramUserInteractionOperations(
     override fun statsFlow() =
         messagesToUserInteractionData(statsCommandMessagesChannel)
 
+    suspend fun addNewChatId(chatId: Long, configId: ConfigId) {
+        chatIdRepository.save(
+            TelegramChatIdEntity(
+                chatId,
+                configId
+            )
+        ).awaitSingleOrNull()
+    }
+
+    suspend fun getConfigId(chatId: Long): Long? =
+        chatIdRepository.findById(chatId).awaitSingleOrNull()?.configId
+
     private fun messagesToUserInteractionData(
         channel: ReceiveChannel<CommonMessage<MessageContent>>
     ): Flow<TelegramUserInteractionData> =
@@ -315,7 +326,7 @@ class TelegramUserInteractionOperations(
         }
 
     private suspend fun getConfigId(chatId: Long, messageId: Long): Long? =
-        chatIdRepository.findById(chatId).awaitSingleOrNull()?.configId.ifNull {
+        getConfigId(chatId).ifNull {
             log.warn {
                 "User chatId=${chatId} sent messageId=${messageId}" +
                         "but not chatId was found in the DB"

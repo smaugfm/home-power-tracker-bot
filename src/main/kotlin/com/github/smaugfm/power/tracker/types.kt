@@ -59,6 +59,12 @@ data class Config(
     val port: Int?,
 )
 
+data class NewConfig(
+    val address: String,
+    val yasnoGroup: YasnoGroup,
+    val port: Int?,
+)
+
 sealed class SummaryStatsPeriod {
     object LastWeek : SummaryStatsPeriod()
     object LastMonth : SummaryStatsPeriod()
@@ -90,7 +96,18 @@ data class EventDeletionRequest<T : UserInteractionData>(
 )
 
 enum class YasnoGroup {
-    Group1, Group2
+    Group1, Group2;
+
+    fun toInt() = this.ordinal + 1
+
+    companion object {
+        fun fromString(str: String): YasnoGroup =
+            when (str) {
+                "1" -> Group1
+                "2" -> Group2
+                else -> throw IllegalArgumentException("Cannot parse YasnoGroup: $str")
+            }
+    }
 }
 
 data class ScheduleImageCreateRequest(

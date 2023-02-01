@@ -7,7 +7,9 @@ import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import java.time.Instant
 
-interface ConfigsRepository : R2dbcRepository<ConfigEntity, Long>
+interface ConfigsRepository : R2dbcRepository<ConfigEntity, Long> {
+    fun findByAddress(address: String): Mono<ConfigEntity>
+}
 
 interface EventsRepository : R2dbcRepository<EventEntity, Long> {
     fun findTop1ByConfigIdAndTypeOrderByCreatedDesc(

@@ -4,7 +4,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 import java.time.Duration
 
 @ConfigurationProperties(prefix = "app.loop")
-data class MainLoopProperties(
+data class LoopProperties(
     val interval: Duration,
     val reachableTimeout: Duration,
     val tries: Int,
