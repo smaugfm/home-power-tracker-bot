@@ -20,7 +20,7 @@ app:
     timeout: 1s
     tries: 3
     wait-for-stable-network-timeout: 10m
-    consecutive-tries-to-consider-online: 20
+    consecutive-tries-to-consider-online: 1
     hosts:
       - 188.190.254.254
       - 1.1.1.1

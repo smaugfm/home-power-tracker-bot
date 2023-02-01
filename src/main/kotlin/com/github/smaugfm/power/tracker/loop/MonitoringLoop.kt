@@ -8,12 +8,10 @@ import com.github.smaugfm.power.tracker.network.NetworkStabilityService
 import com.github.smaugfm.power.tracker.network.PingService
 import com.github.smaugfm.power.tracker.spring.LaunchCoroutineBean
 import com.github.smaugfm.power.tracker.spring.LoopProperties
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.toList
 import mu.KotlinLogging
 import org.springframework.stereotype.Component
 import java.time.Duration
@@ -40,9 +38,11 @@ class MonitoringLoop(
             if (!networkStability.waitStable())
                 continue
 
-            configs.getAll()
+            configs
+                .getAll()
                 .map { config ->
                     scope.launch(Dispatchers.IO) {
+                        log.info { "Checking $config" }
                         val prevState = events.getCurrentState(config.id)
                         val currentState = ping.ping(this, config.address, config.port)
                         logInitialState(stateLogged, config, prevState, currentState)
@@ -50,12 +50,12 @@ class MonitoringLoop(
                         if (prevState != currentState) {
                             processStateChange(config, prevState, currentState)
                         }
+                        log.info { "Done $config" }
                     }
                 }.catch {
                     log.error(it) { "Error in main loop while processing $this" }
-                }.collect {
-                    it.join()
-                }
+                }.toList()
+                .joinAll()
 
             delay(props.interval.toKotlinDuration())
         }
