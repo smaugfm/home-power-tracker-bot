@@ -259,7 +259,7 @@ class TelegramUserInteractionOperations(
             .consumeAsFlow()
             .mapNotNull { message ->
                 val chatId = getChatIdFromReply(message) ?: return@mapNotNull null
-                val configId = getConfigId(chatId, message.messageId) ?: return@mapNotNull null
+                val configId = getConfigIdByChatId(chatId, message.messageId) ?: return@mapNotNull null
                 val messageEntity = message.replyTo?.messageId?.let {
                     messagesRepository
                         .findByMessageIdAndChatId(it, message.chat.id.chatId)
@@ -292,11 +292,11 @@ class TelegramUserInteractionOperations(
             TelegramChatIdEntity(
                 chatId,
                 configId
-            )
+            ).markNew()
         ).awaitSingleOrNull()
     }
 
-    suspend fun getConfigId(chatId: Long): Long? =
+    suspend fun getConfigIdByChatId(chatId: Long): Long? =
         chatIdRepository.findById(chatId).awaitSingleOrNull()?.configId
 
     private fun messagesToUserInteractionData(
@@ -306,7 +306,7 @@ class TelegramUserInteractionOperations(
             .consumeAsFlow()
             .mapNotNull { message ->
                 val chatId = getChatId(message) ?: return@mapNotNull null
-                val configId = getConfigId(chatId, message.messageId) ?: return@mapNotNull null
+                val configId = getConfigIdByChatId(chatId, message.messageId) ?: return@mapNotNull null
 
                 TelegramUserInteractionData(
                     configId,
@@ -325,11 +325,11 @@ class TelegramUserInteractionOperations(
             log.warn { "Not chatId in messageId=${message.messageId}" }
         }
 
-    private suspend fun getConfigId(chatId: Long, messageId: Long): Long? =
-        getConfigId(chatId).ifNull {
+    private suspend fun getConfigIdByChatId(chatId: Long, messageId: Long): Long? =
+        getConfigIdByChatId(chatId).ifNull {
             log.warn {
                 "User chatId=${chatId} sent messageId=${messageId}" +
-                        "but not chatId was found in the DB"
+                        " but not chatId was found in the DB"
             }
         }
 }

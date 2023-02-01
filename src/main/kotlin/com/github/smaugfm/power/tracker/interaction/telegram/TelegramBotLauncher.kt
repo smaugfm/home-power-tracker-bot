@@ -8,9 +8,9 @@ import dev.inmo.tgbotapi.extensions.api.bot.getMe
 import dev.inmo.tgbotapi.extensions.behaviour_builder.buildBehaviourWithLongPolling
 import dev.inmo.tgbotapi.extensions.behaviour_builder.triggers_handling.onCommand
 import dev.inmo.tgbotapi.extensions.behaviour_builder.triggers_handling.onContentMessage
+import dev.inmo.tgbotapi.extensions.utils.extensions.raw.text
 import dev.inmo.tgbotapi.types.message.abstracts.CommonMessage
 import dev.inmo.tgbotapi.types.message.content.MessageContent
-import dev.inmo.tgbotapi.types.message.content.TextContent
 import dev.inmo.tgbotapi.utils.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.Channel
@@ -22,6 +22,7 @@ import org.springframework.stereotype.Component
 private val log = KotlinLogging.logger {}
 
 @Profile("!test")
+@OptIn(RiskFeature::class)
 @Component
 class TelegramBotLauncher(
     private val start: StartCommandHandler,
@@ -36,28 +37,21 @@ class TelegramBotLauncher(
     override suspend fun launch(scope: CoroutineScope) {
         val job = bot.buildBehaviourWithLongPolling(scope = scope) {
             onCommand("start") {
-                logCommand(it, "start")
                 start.handle(this, scope, it.chat.id)
             }
             onCommand("stats") {
-                logCommand(it, "stats")
                 statsCommandMessagesChannel.send(it)
             }
             onCommand("export") {
-                logCommand(it, "export")
                 exportCommandMessagesChannel.send(it)
             }
             onContentMessage { message ->
                 if (!delete.handle(this, message))
-                    log.info { "Received Telegram message: $message" }
+                    log.info { "Received Telegram message with text='${message.text}, msg=$message'" }
             }
         }
         val botStr = bot.getMe().toString()
         log.info { "Telegram bot started: $botStr" }
         job.join()
-    }
-
-    private fun logCommand(it: CommonMessage<TextContent>, cmd: String) {
-        log.info("Received Telegram /$cmd command: $it")
     }
 }

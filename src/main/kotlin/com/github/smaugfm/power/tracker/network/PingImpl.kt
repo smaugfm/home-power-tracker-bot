@@ -1,17 +1,17 @@
 package com.github.smaugfm.power.tracker.network
 
 import com.github.smaugfm.power.tracker.isZero
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Deferred
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.*
+import mu.KotlinLogging
 import org.springframework.stereotype.Component
 import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.Socket
+import java.net.UnknownHostException
 import java.time.Duration
 import kotlin.time.toKotlinDuration
+
+private val log = KotlinLogging.logger { }
 
 @Component
 class PingImpl : Ping {
@@ -22,13 +22,20 @@ class PingImpl : Ping {
         tries: Int
     ) =
         scope.async(Dispatchers.IO) {
-            Runtime.getRuntime()
-                .exec(
-                    "fping -c $tries -p " +
-                            "${eachTimeout.toMillis()} ${InetAddress.getByName(address).hostAddress}"
-                )
-                .waitFor()
-                .isZero()
+            try {
+                Runtime.getRuntime()
+                    .exec(
+                        "fping -c $tries -p " +
+                                "${eachTimeout.toMillis()} ${InetAddress.getByName(address).hostAddress}"
+                    )
+                    .waitFor()
+                    .isZero()
+            } catch (e: UnknownHostException) {
+                false
+            } catch (e: Throwable) {
+                log.error(e) { "Unexpected error executing fping" }
+                false
+            }
         }
 
     override fun isTcpReachable(

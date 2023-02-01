@@ -4,7 +4,10 @@ import com.github.smaugfm.power.tracker.PowerIspState
 import com.github.smaugfm.power.tracker.spring.LoopProperties
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.awaitAll
+import mu.KotlinLogging
 import org.springframework.stereotype.Service
+
+private val log = KotlinLogging.logger { }
 
 @Service
 class PingServiceImpl(

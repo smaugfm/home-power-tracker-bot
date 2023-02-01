@@ -42,7 +42,6 @@ class MonitoringLoop(
                 .getAll()
                 .map { config ->
                     scope.launch(Dispatchers.IO) {
-                        log.info { "Checking $config" }
                         val prevState = events.getCurrentState(config.id)
                         val currentState = ping.ping(this, config.address, config.port)
                         logInitialState(stateLogged, config, prevState, currentState)
@@ -50,7 +49,6 @@ class MonitoringLoop(
                         if (prevState != currentState) {
                             processStateChange(config, prevState, currentState)
                         }
-                        log.info { "Done $config" }
                     }
                 }.catch {
                     log.error(it) { "Error in main loop while processing $this" }

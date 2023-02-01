@@ -1,8 +1,12 @@
 package com.github.smaugfm.power.tracker
 
 import dev.inmo.tgbotapi.extensions.behaviour_builder.BehaviourContext
+import dev.inmo.tgbotapi.extensions.behaviour_builder.expectations.waitDataCallbackQuery
 import dev.inmo.tgbotapi.extensions.behaviour_builder.expectations.waitText
+import dev.inmo.tgbotapi.extensions.utils.types.buttons.InlineKeyboardMarkup
 import dev.inmo.tgbotapi.requests.abstracts.Request
+import dev.inmo.tgbotapi.requests.send.SendTextMessage
+import dev.inmo.tgbotapi.types.buttons.InlineKeyboardButtons.CallbackDataInlineKeyboardButton
 import kotlinx.coroutines.flow.firstOrNull
 import net.time4j.PrettyTime
 import java.time.Duration
@@ -57,9 +61,24 @@ fun String.yesNoToBoolean() =
         else -> throw IllegalArgumentException("Cannot parse yes/no: $this")
     }
 
+suspend fun BehaviourContext.waitMenuButtons(
+    initRequest: SendTextMessage,
+    vararg buttons: String,
+): String? {
+    assert(buttons.distinct() == buttons.toList())
+
+    return waitDataCallbackQuery(
+        initRequest.copy(
+            replyMarkup = InlineKeyboardMarkup(
+                *buttons.map { CallbackDataInlineKeyboardButton(it, it) }.toTypedArray()
+            )
+        )
+    ).firstOrNull()?.data
+}
+
 suspend fun BehaviourContext.waitTextRegex(
     initRequest: Request<*>? = null,
-    check: List<Regex>,
+    checks: List<Regex>,
     illegalHandler: suspend BehaviourContext.() -> Unit,
     exitCommand: String = "exit",
 ): String? {
@@ -68,7 +87,7 @@ suspend fun BehaviourContext.waitTextRegex(
         text = waitText(initRequest) { null }.firstOrNull()?.text
         if (text == "/$exitCommand")
             return null
-        if (text == null || check.any { !it.matches(text) })
+        if (text == null || checks.all { !it.matches(text) })
             illegalHandler()
         else
             break
