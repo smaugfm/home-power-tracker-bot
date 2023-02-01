@@ -96,6 +96,8 @@ class StartCommandHandler(
             {
                 sendTextMessage(replyToChatId, "Це не схоже на ip-адресу чи DNS ім'я. Спробуй ще раз або /exit")
             })
+            ?.trim()
+            ?.lowercase()
 
     private suspend fun BehaviourContext.checkExistingConfig(
         address: String,
