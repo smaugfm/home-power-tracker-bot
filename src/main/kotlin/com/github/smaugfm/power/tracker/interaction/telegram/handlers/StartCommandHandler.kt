@@ -1,12 +1,9 @@
 package com.github.smaugfm.power.tracker.interaction.telegram.handlers
 
-import com.github.smaugfm.power.tracker.NewConfig
-import com.github.smaugfm.power.tracker.YasnoGroup
+import com.github.smaugfm.power.tracker.*
 import com.github.smaugfm.power.tracker.config.ConfigService
 import com.github.smaugfm.power.tracker.interaction.telegram.TelegramUserInteractionOperations
 import com.github.smaugfm.power.tracker.network.PingService
-import com.github.smaugfm.power.tracker.waitMenuButtons
-import com.github.smaugfm.power.tracker.waitTextRegex
 import dev.inmo.tgbotapi.extensions.api.send.sendTextMessage
 import dev.inmo.tgbotapi.extensions.behaviour_builder.BehaviourContext
 import dev.inmo.tgbotapi.requests.send.SendTextMessage
@@ -14,10 +11,12 @@ import dev.inmo.tgbotapi.types.IdChatIdentifier
 import dev.inmo.tgbotapi.utils.*
 import kotlinx.coroutines.CoroutineScope
 import mu.KotlinLogging
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 
 private val log = KotlinLogging.logger {}
 
+@Profile("!test")
 @Component
 class StartCommandHandler(
     private val ping: PingService,
@@ -147,22 +146,9 @@ class StartCommandHandler(
             return
         }
 
-        val group = waitMenuButtons(
-            SendTextMessage(
-                replyToChatId,
-                EntitiesBuilder()
-                    .regular(
-                        "Яка в тебе група відключень для міста Києва? " +
-                                "Це можна подивитись на сайті "
-                    )
-                    .link("kyiv.yasno.com", "https://kyiv.yasno.com.ua/schedule-turn-off-electricity")
-                    .build(),
-            ),
-            "1", "2"
-        )
-        val yasnoGroup = YasnoGroup.fromString(group!!)
-        val newConfig = NewConfig(address, yasnoGroup, null)
+        val yasnoGroup = getKyivYasnoGroup(replyToChatId)
 
+        val newConfig = NewConfig(address, yasnoGroup, null)
         val config = configService.addNewConfig(newConfig)
         telegramUserInteractionOperations.addNewChatId(
             replyToChatId.chatId,
@@ -173,5 +159,33 @@ class StartCommandHandler(
             replyToChatId,
             "Все, тепер ти отримуватимеш сповіщення коли в тебе дома з'являється чи пропадає світло",
         )
+    }
+
+    private suspend fun BehaviourContext.getKyivYasnoGroup(replyToChatId: IdChatIdentifier): YasnoGroup? {
+        val inKyiv = waitYesNo(
+            SendTextMessage(
+                replyToChatId,
+                "Яи проживаєш ти в місті Києві? Якщо так, то я зможу " +
+                        "порівнювати твої відключення з офіційними графіками від ДТЕК, але поки що тільки для Києва"
+            )
+        )
+
+        if (inKyiv != true)
+            return null
+
+        val group = waitMenuButtons(
+            SendTextMessage(
+                replyToChatId,
+                EntitiesBuilder()
+                    .regular(
+                        "Яка в тебе група відключень? " +
+                                "Це можна подивитись на сайті "
+                    )
+                    .link("kyiv.yasno.com", "https://kyiv.yasno.com.ua/schedule-turn-off-electricity")
+                    .build(),
+            ),
+            "1", "2"
+        )
+        return group?.let(YasnoGroup::fromString)
     }
 }

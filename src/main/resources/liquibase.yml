@@ -195,4 +195,15 @@ databaseChangeLog:
                   type: timestamp with time zone
                   constraints:
                     nullable: false
-
+  - changeSet:
+      id: 05
+      author: smaugfm
+      changes:
+        - dropNotNullConstraint:
+            columnName: yasno_group
+            tableName: tb_configs
+            columnDataType: int
+        - dropDefaultValue:
+            columnName: yasno_group
+            tableName: tb_configs
+            columnDataType: int

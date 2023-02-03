@@ -55,13 +55,13 @@ data class MonitoringEvent(
 data class Config(
     val id: ConfigId,
     val address: String,
-    val yasnoGroup: YasnoGroup,
+    val yasnoGroup: YasnoGroup?,
     val port: Int?,
 )
 
 data class NewConfig(
     val address: String,
-    val yasnoGroup: YasnoGroup,
+    val yasnoGroup: YasnoGroup?,
     val port: Int?,
 )
 

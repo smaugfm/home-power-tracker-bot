@@ -34,17 +34,19 @@ class ConfigServiceImpl(
             ConfigEntity(
                 address = newConfig.address,
                 port = newConfig.port,
-                yasnoGroup = newConfig.yasnoGroup.toInt()
+                yasnoGroup = newConfig.yasnoGroup?.toInt()
             )
         ).awaitSingle().let(::mapDto)
 
-    private fun mapDto(it: ConfigEntity) = Config(
-        it.id,
-        it.address,
-        if (it.yasnoGroup == 1)
-            YasnoGroup.Group1
-        else
-            YasnoGroup.Group2,
-        it.port
+    private fun mapDto(e: ConfigEntity) = Config(
+        e.id,
+        e.address,
+        e.yasnoGroup?.let {
+            if (it == 1)
+                YasnoGroup.Group1
+            else
+                YasnoGroup.Group2
+        },
+        e.port
     )
 }

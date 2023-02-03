@@ -10,10 +10,12 @@ import dev.inmo.tgbotapi.utils.RiskFeature
 import kotlinx.coroutines.channels.Channel
 import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Qualifier
+import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 
 private val log = KotlinLogging.logger {}
 
+@Profile("!test")
 @OptIn(RiskFeature::class)
 @Component
 class DeleteEventHandler(

@@ -19,7 +19,7 @@ data class ConfigEntity(
     @Column("notify_isp")
     val notifyIsp: Boolean = true,
     @Column("yasno_group")
-    val yasnoGroup: Int = 1,
+    val yasnoGroup: Int? = null,
     @Id
     var id: Long = 0,
 )

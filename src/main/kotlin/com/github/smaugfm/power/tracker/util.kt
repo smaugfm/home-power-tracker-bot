@@ -54,12 +54,15 @@ fun Duration.humanReadable(): String {
 
 }
 
-fun String.yesNoToBoolean() =
-    when (this) {
-        "Так" -> true
-        "Ні" -> false
-        else -> throw IllegalArgumentException("Cannot parse yes/no: $this")
+suspend fun BehaviourContext.waitYesNo(initRequest: SendTextMessage): Boolean? {
+    val answer = waitMenuButtons(initRequest, "так", "ні") ?: return null
+
+    return when (answer.lowercase()) {
+        "так" -> true
+        "ні" -> false
+        else -> null
     }
+}
 
 suspend fun BehaviourContext.waitMenuButtons(
     initRequest: SendTextMessage,
