@@ -2,4 +2,4 @@
 
 Sends notifications about your home power outages with handy periodic statistics.
 
-It works by tracking your home router presence from outside internet.
+It works by tracking your home router presence from outside internet with periodic ICMP (ping) requests.
